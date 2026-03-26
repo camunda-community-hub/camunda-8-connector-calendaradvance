@@ -5,7 +5,6 @@ import io.camunda.connector.api.outbound.OutboundConnectorContext;
 import io.camunda.connector.calendaradvance.CalendarAdvanceInput;
 import io.camunda.connector.calendaradvance.CalendarAdvanceOutput;
 import io.camunda.connector.calendaradvance.advanceday.DayFunction;
-import io.camunda.connector.calendaradvance.timemachine.HolidayContainer;
 import io.camunda.connector.calendaradvance.timemachine.SlotContainer;
 import io.camunda.connector.calendaradvance.toolbox.CalendarAdvanceError;
 import io.camunda.connector.calendaradvance.toolbox.SubFunction;
@@ -14,8 +13,8 @@ import io.camunda.connector.cherrytemplate.RunnerParameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -24,6 +23,7 @@ import java.util.Map;
 public class HourFunction implements SubFunction {
 
 
+    public static final String ADVANCE_HOURS = "advance-hours";
     private final Logger logger = LoggerFactory.getLogger(DayFunction.class.getName());
 
 
@@ -48,10 +48,6 @@ public class HourFunction implements SubFunction {
             // add all pages from sources
             CalendarAdvanceOutput calendarOutput = new CalendarAdvanceOutput();
 
-            if (calendarInput.isUseHolidays()) {
-                HolidayContainer.getInstance().loadCountries(calendarInput.getHolidaysCountries());
-            }
-
             SlotContainer slotContainer = new SlotContainer();
             slotContainer.setSlots(calendarInput.getBusinessCalendar());
             calendarInput.calculateReferenceDateLocalDateTime();
@@ -61,37 +57,54 @@ public class HourFunction implements SubFunction {
             long durationInMinutes = calendarInput.getDurationInMinutes();
 
             for (int i = 0; i < 1000; i++) {
-                if (calendarInput.isUseHolidays() && HolidayContainer.getInstance().isHoliday(cursor.toLocalDate(), calendarInput.getHolidaysCountries())) {
-                    // we have to adance to the next day
-                    cursor = slotContainer.advanceNextDay(cursor, calendarInput.getAdvance());
-                } else {
+                // Calculate the next period according the current date. The Period is adapted to the cursor
+                SlotContainer.AdvanceResult advanceResult = slotContainer.getNextPeriod(cursor,
+                        calendarInput.getAdvance(),
+                        calendarInput.isUseHolidays(),
+                        calendarInput.getHolidaysCountries());
 
-                    SlotContainer.AdvanceResult advanceResult = slotContainer.getNextPeriod(cursor, calendarInput.getAdvance());
-
-                    if (!advanceResult.foundPeriod) {
-                        // This is the end here!
-                        calendarOutput.foundDate = false;
-                        return calendarOutput;
-                    }
-                    // reduce the duration by the period
-                    if (advanceResult.period.getMinutes() > durationInMinutes) {
-                        // This is the end!
-
-                        if (calendarInput.getAdvance())
-                            cursor = LocalDateTime.of(LocalDate.from(cursor), advanceResult.period.startTime)
-                                    .plusMinutes(durationInMinutes);
-                        else
-                            cursor = LocalDateTime.of(LocalDate.from(cursor), advanceResult.period.endTime)
-                                    .minusMinutes(durationInMinutes);
-                        logger.debug("AdvanceDayFunction LAST Period [{}-{}]: {} mn : now {} ", advanceResult.period.startTime, advanceResult.period.endTime, advanceResult.period.getMinutes(), cursor);
-
-                        break; // end of the loop
-                    }
-                    durationInMinutes -= advanceResult.period.getMinutes();
-
-                    cursor = advanceResult.newDate;
-                    logger.debug("AdvanceDayFunction Period [{}-{}]: {} mn : now {} for {} mn", advanceResult.period.startTime, advanceResult.period.endTime, advanceResult.period.getMinutes(), cursor, durationInMinutes);
+                if (!advanceResult.foundPeriod) {
+                    // This is the end here!
+                    calendarOutput.foundDate = false;
+                    return calendarOutput;
                 }
+                // reduce the duration by the period
+                if (advanceResult.period.getMinutes() >= durationInMinutes) {
+                    // This is the end!
+                    SlotContainer.Period lastPeriod;
+                    if (calendarInput.getAdvance()) {
+                        cursor = LocalDateTime.of(advanceResult.periodDate, advanceResult.period.startTime)
+                                .plusMinutes(durationInMinutes);
+                        lastPeriod = SlotContainer.Period.getPeriod(advanceResult.period.dayOfWeek,
+                                        advanceResult.period.startTime,
+                                        cursor.toLocalTime())
+                                .setDateOfPeriod(cursor.toLocalDate());
+                    } else {
+                        // Attention, end of the period may my MIDNIGHT, i.e. 23:59+1
+                        if (LocalTime.MIDNIGHT.equals(advanceResult.period.endTime) || SlotContainer.MIDNIGHT_MINUS.equals(advanceResult.period.endTime))
+                            cursor = LocalDateTime.of(advanceResult.periodDate, LocalTime.of(23, 59))
+                                    .minusMinutes(durationInMinutes - 1);
+                        else
+                            cursor = LocalDateTime.of(advanceResult.periodDate, advanceResult.period.endTime)
+                                    .minusMinutes(durationInMinutes);
+                        lastPeriod = SlotContainer.Period.getPeriod(advanceResult.period.dayOfWeek,
+                                        cursor.toLocalTime(),
+                                        advanceResult.period.endTime)
+                                .setDateOfPeriod(cursor.toLocalDate());
+
+                    }
+                    calendarOutput.listPeriods.add(lastPeriod);
+                    logger.debug("AdvanceDayFunction LAST Period [{}-{}]: {} mn : now {} ", lastPeriod.startTime, lastPeriod.endTime, lastPeriod.getMinutes(), cursor);
+
+                    break; // end of the loop
+                }
+                durationInMinutes -= advanceResult.period.getMinutes();
+
+                calendarOutput.listPeriods.add(advanceResult.period.cloneForRealPeriod(cursor.toLocalDate()));
+
+                cursor = advanceResult.newDate;
+                logger.debug("AdvanceDayFunction Period [{}-{}]: {} mn : now {} for {} mn", advanceResult.period.startTime, advanceResult.period.endTime, advanceResult.period.getMinutes(), cursor, durationInMinutes);
+
             }
             calendarOutput.foundDate = true;
             calendarOutput.resultDate = cursor;
@@ -124,7 +137,7 @@ public class HourFunction implements SubFunction {
 
     @Override
     public String getSubFunctionType() {
-        return "advance-hours";
+        return ADVANCE_HOURS;
     }
 
 
@@ -143,7 +156,7 @@ public class HourFunction implements SubFunction {
 
     @Override
     public List<RunnerParameter> getOutputsParameter() {
-        return List.of(CalendarAdvanceOutput.parameterFoundDate, CalendarAdvanceOutput.parameterFResultDate);
+        return List.of(CalendarAdvanceOutput.parameterFoundDate, CalendarAdvanceOutput.parameterResultDate, CalendarAdvanceOutput.parameterListPeriod);
     }
 
     @Override

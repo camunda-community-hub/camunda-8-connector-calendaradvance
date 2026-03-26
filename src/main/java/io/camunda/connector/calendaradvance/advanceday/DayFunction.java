@@ -10,7 +10,10 @@ import io.camunda.connector.cherrytemplate.RunnerParameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class DayFunction implements SubFunction {
     private static final Map<String, String> listBpmnErrors = new HashMap<>();

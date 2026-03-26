@@ -18,4 +18,8 @@ public class CalendarAdvanceError {
     public static final String ERROR_BAD_DURATION = "ERROR_BAD_DURATION";
     public static final String ERROR_BAD_DURATION_EXPLANATION = "Duration must be an ISO8601 format: P3D or PT14H54M or P2DT14H";
 
+
+    public static final String ERROR_CANT_GET_HOLIDAYS = "ERROR_CANT_GET_HOLIDAYS";
+    public static final String ERROR_CANT_GET_HOLIDAYS_EXPLANATION = "Error during access the calendar";
+
 }

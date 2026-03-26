@@ -184,6 +184,50 @@
           "advance-hours"
         ]
       },
+      "id": "businessTimeZone_optional",
+      "label": "Provide Business TimeZone?",
+      "description": "The business Calendar can be attached to a timezone. Region Based and Fixed UTC offsets accepted. Visit https://en.wikipedia.org/wiki/List_of_tz_database_time_zones",
+      "value": "false",
+      "binding": {
+        "name": "businessTimeZone_optional",
+        "type": "zeebe:input"
+      },
+      "type": "Dropdown",
+      "choices": [
+        {
+          "name": "Yes",
+          "value": "true"
+        },
+        {
+          "name": "No",
+          "value": "false"
+        }
+      ],
+      "group": "Input"
+    },
+    {
+      "condition": {
+        "property": "businessTimeZone_optional",
+        "equals": "true"
+      },
+      "id": "businessTimeZone",
+      "label": "Business TimeZone",
+      "description": "The business Calendar can be attached to a timezone. Region Based and Fixed UTC offsets accepted. Visit https://en.wikipedia.org/wiki/List_of_tz_database_time_zones",
+      "type": "String",
+      "feel": "optional",
+      "binding": {
+        "name": "businessTimeZone",
+        "type": "zeebe:input"
+      },
+      "group": "Input"
+    },
+    {
+      "condition": {
+        "property": "calendarAdvanceFunction",
+        "oneOf": [
+          "advance-hours"
+        ]
+      },
       "id": "useHolidays",
       "label": "Use holidays",
       "description": "Holidays on country is used and considered as closed",
@@ -216,7 +260,7 @@
       },
       "id": "holidaysCountries",
       "label": "Holiday countries",
-      "description": "List of countries separate by semi column (FR;USA°) ",
+      "description": "List of countries (\"FR\", \"US\"). List of available countrycodes \u003ca href\u003d\\\"https://date.nager.at/Country\\\" target\u003d\\\"_blank\\\"\u003ehere\u003c/a\u003e ",
       "type": "String",
       "feel": "optional",
       "binding": {
@@ -244,12 +288,6 @@
       "group": "Output"
     },
     {
-      "condition": {
-        "property": "calendarAdvanceFunction",
-        "oneOf": [
-          "advance-hours"
-        ]
-      },
       "id": "resultDate",
       "label": "Result Date",
       "description": "Date, LocalDateTime format, returned",

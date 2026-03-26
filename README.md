@@ -131,14 +131,144 @@ Duration: PT6H = 360 mn
 Business calendar : default
 Use Holiday true / US
 
-| Day                 | Use                          | Reloicat                    | 
-|---------------------|------------------------------|-----------------------------| 
-| Friday 16           | 18:00-15:34= 2:26 mn = 146 mn | 360-146 = 214               | 
-| Saturday 17         | Close                        |                             |
-| Sunday 18           | Close                        |                             | 
-| Monday 19           | Close (Martin Luther Kind)   |                             | 
-| Tuesday 20          | 18:00-09h = 9:00= 540 mn     | 540 > 214 : 9:00+214= 12:34 |
+| Day                 | Use                            | Relicat                      | 
+|---------------------|--------------------------------|------------------------------| 
+| Friday 16           | 18:00-15:34= 2:26 mn = 146 mn  | 360-146 = 214                | 
+| Saturday 17         | Close                          |                              |
+| Sunday 18           | Close                          |                              | 
+| Monday 19           | Close (Martin Luther Kind)     |                              | 
+| Tuesday 20          | 18:00-09h = 9:00= 540 mn       | 540 > 214 : 9:00+214= 12:34  |
 
 Result: Tuesday 20, 12:34
 
+## Reverse date + Holiday
+
+Start date:  2026-07-15T10:34:00
+Duration: PT12H10M = 730 mn
+Business calendar : default
+Use Holiday true / FR
+
+| Day           | Use                       | Relicat                         | 
+|---------------|---------------------------|---------------------------------| 
+| Wednesday 15  | 10:34-09:00= 94 mn        | 730-94 = 636                    | 
+| Tuesday 14 17 | Close (bastille day)      |                                 |
+| Monday 13     | 18:00-09h = 9:00= 540 mn  | 636-540= 96                     | 
+| Sunday 12     | Close                     |                                 | 
+| Saturday 11   | Close                     |                                 | 
+| Friday 10     | 18:00-09:00 = 9h = 540 mn | 540 > 96 : 18:00 - 96 mn=16:24  |     
+
+Result: Friday 10, 16:24
+
+
+
+## Local date - 2 slots per day
+
+
+Start date:  2026-03-26T11:50:00
+Duration: PT18H20M = 1100 mn
+Business calendar :
+"Monday=09:00:00-12:00:00,14:10:00-18:00:00",
+"Tuesday=09:00:00-12:00:00,14:10:00-18:00:00",
+"Wednesday=09:00:00-12:00:00,14:10:00-18:00:00"
+"Thursday=09:00:00-12:00:00,14:10:00-18:00:00",
+"Friday=09:00:00-12:00:00"
+
+Use Holiday true / US
+
+| Day         | Use                                              | Relicat                        | 
+|-------------|--------------------------------------------------|--------------------------------| 
+| Thursday 26 | 11:50:00-12:00:00 + 14:10:00-18:00:00= 10+230 mn | 1100-240 = 860                 | 
+| Friday 27   | 09:00:00-12:00:00 : 180 mn                       | 860-180 = 680                  |  
+| Saturday 29 | Close                                            |                                | 
+| Sunday 30   | Close                                            |                                | 
+| Monday 30   | 09:00:00-12:00:00 = 180 mn                       | 680-180= 500                   |
+|             | 14:10:00-18:00:00 = 230 mn                       | 500-230= 270                   |
+| Tuesday 31  | 09:00:00-12:00:00 : 180 mn                       | 270-180= 90                    |
+|             | 14:10:00-18:00:00 = 230 mn                       | 230 > 90 : 09:00 +90 mn= 15:40 |
+
+
+
+
+Result: Tuesday 31, 10:30
+
+
+
+
+## Local date - 2 holiday in 2 different countries
+
+Start date:  2026-07-02T17:15:00
+Duration: PT60H50M = 3650 mn
+Business calendar : no
+Use Holiday true / US,FR
+
+| Day          | Use                         | Relicat                          | 
+|--------------|-----------------------------|----------------------------------|
+| Thursday 2   | 17:15:00-18:00:00= 45 mn    | 3650-45= 3605 mn                 |                   
+| Friday 3     | Close (Indep. day observed) |                                  |
+| Saturday 4   | Close                       |                                  |
+| Sunday 5     | Close                       |                                  |
+| Monday 6     | 09:00-18:00 (540 mn)        | 3685-540 = 3065 mn               |                  
+| Tuesday 7    | 09:00-18:00 (540 mn)        | 3065-540= 2525 mn                |                
+| Wednesday 8  | 09:00-18:00 (540 mn)        | 2525-540 = 1985 mn               |                  
+| Thursday 9   | 09:00-18:00 (540 mn)        | 1985-540= 1445 mn                |                    
+| Friday 10    | 09:00-18:00 (540 mn)        | 1445-540= 905 mn                 |                      
+| Saturday 11  | Close                       |                                  |
+| Sunday 12    | Close                       |                                  |
+| Monday 13    | 09:00-18:00 (540 mn)        | 905-540=365 mn                   |                  
+| Tuesday 14   | Close (bastille day)        |                                  |     
+| Wednesday 15 | 09:00-18:00 (540 mn)        | 540 > 365 : 09:00 +365 mn= 15:05 |  
+
+
+Result: Wednesday 15, 15:05
+
+
+## Local Date over new year
+
+Start date:  2026-12-30T13:54
+Duration: PT15H15M = 915 mn
+Business calendar : no
+Use Holiday true / US
+
+| Day           | Use                    | Relicat          | 
+|---------------|------------------------|------------------|
+| Wednesday 30  | 13:54-18:00:00= 246 mn | 915-246= 669 mn  |  
+| Thursday 31   | 09:00-18:00 (540 mn)   | 669-540 = 120 mn | 
+| Friday 1      | Close                  |                  |
+| Saturday 2    | Close                  |                  |
+| Sunday 3      | Close                  |                  |
+| Monday 4      | 09:00-11:09 (129 mn)   | 0                | 
+
+Result Monday 4, 11:09
+
+## Local date 24/7 hours
+
+
+Start date:  2026-07-11T13:54
+Duration: P10D = 14400 mn
+Business calendar : 24/7
+Use Holiday true / US
+
+
+
+## Local date with holiday and specific time
+
+July 13 and July 14 with special time, only morning
+
+
+
+## Zoned time
+
+09:15 EAST 
+Calendar 09:00-18:00 PACIFIC TIME
+
+Advance 2:10 hours
+==> Result should be 11:10 local time==> 14:10 EAST
+
+
+
+## Advance day
+
+## Reverse day
+
+## Advance day with holiday
 

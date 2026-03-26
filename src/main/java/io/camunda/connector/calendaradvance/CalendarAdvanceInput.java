@@ -88,12 +88,13 @@ public class CalendarAdvanceInput implements CherryInput {
             Boolean.class, // class
             RunnerParameter.Level.REQUIRED, // level
             "Holidays on country is used and considered as closed");
+
     public static final RunnerParameter parameterHolidayCountries = new RunnerParameter(
             CalendarAdvanceInput.HOLIDAYS_COUNTRIES, // name
             "Holiday countries", // label
-            String.class, // class
+            List.class, // class
             RunnerParameter.Level.REQUIRED, // level
-            "List of countries separate by semi column (FR;USA°) ")
+            "List of countries (\"FR\", \"US\"). List of available countrycodes <a href=\\\"https://date.nager.at/Country\\\" target=\\\"_blank\\\">here</a> ")
             .addCondition(CalendarAdvanceInput.USE_HOLIDAYS, List.of("true"));
 
     private final Logger logger = LoggerFactory.getLogger(CalendarAdvanceInput.class.getName());
@@ -104,7 +105,7 @@ public class CalendarAdvanceInput implements CherryInput {
     public String direction;
     public Object startDate;
     public boolean useHolidays;
-    public String holidaysCountries;
+    public List<String> holidaysCountries;
 
     public String businessTimeZone;
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -166,7 +167,7 @@ public class CalendarAdvanceInput implements CherryInput {
     }
 
     public List<String> getHolidaysCountries() {
-        return List.of(holidaysCountries.split(";"));
+        return holidaysCountries;
     }
 
     @Override

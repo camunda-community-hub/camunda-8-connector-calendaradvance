@@ -48,12 +48,12 @@ public class CalendarAdvanceFunction implements OutboundConnectorFunction, Cherr
         // search the sub-function referenced
         String function = calendarAdvanceInput.getCalendarAdvanceFunction();
         long beginTime = System.currentTimeMillis();
-        logger.info("PDFFunction receive function [{}]", function);
+        logger.info("CalendarAdvanceFunction receive function [{}]", function);
         for (SubFunction inputSubFunction : getListSubFunctions()) {
             if (inputSubFunction.getSubFunctionType().equals(function)) {
-                CalendarAdvanceOutput pdfOutput = inputSubFunction.executeSubFunction(calendarAdvanceInput, outboundConnectorContext);
-                logger.info("PDFFunction End function [{}] in {} ms", function, System.currentTimeMillis() - beginTime);
-                return pdfOutput;
+                CalendarAdvanceOutput calendarAdvanceOutput = inputSubFunction.executeSubFunction(calendarAdvanceInput, outboundConnectorContext);
+                logger.info("CalendarAdvanceFunction End function [{}] in {} ms", function, System.currentTimeMillis() - beginTime);
+                return calendarAdvanceOutput;
             }
         }
         throw new ConnectorException(CalendarAdvanceError.ERROR_UNKNOWN_FUNCTION, "CalendarAdvance Unknown function " + function + "]");
@@ -74,7 +74,7 @@ public class CalendarAdvanceFunction implements OutboundConnectorFunction, Cherr
 
     @Override
     public String getCollectionName() {
-        return "PDF";
+        return "Calendar";
     }
 
     @Override
