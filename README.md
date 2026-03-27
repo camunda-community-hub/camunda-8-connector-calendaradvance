@@ -243,18 +243,55 @@ Result Monday 4, 11:09
 ## Local date 24/7 hours
 
 
-Start date:  2026-07-11T13:54
+Start date:  2026-09-11T13:54
 Duration: P10D = 14400 mn
 Business calendar : 24/7
 Use Holiday true / US
 
+| Day          | Use                    | Relicat              | 
+|--------------|------------------------|----------------------|
+| FRIDAY 11    | 13:54-00:00 (606 mn)   | 14400 - 606 = 13794  | 
+| SATURDAY 12  | 00:00-00:00 (1440 mn)  | 13794 - 1440 = 12354 |
+| SUNDAY 13    | 00:00-00:00 (1440 mn)  | 12354 - 1440= 10914  |      
+| MONDAY 14    | 00:00-00:00 (1440 mn)  | 10914 - 1440= 9474   |      
+| TUESDAY 15   | 00:00-00:00 (1440 mn)  | 9474 - 1440= 8034    |         
+| WEDNESDAY 16 | 00:00-00:00 (1440 mn)  | 8034 - 1440= 6594    |
+| THURSDAY 17  | 00:00-00:00 (1440 mn)  | 6594 - 1440=5154     |          
+| FRIDAY 18    | 00:00-00:00 (1440 mn)  | 5154 - 1440= 3714    |        
+| SATURDAY 19  | 00:00-00:00 (1440 mn)  | 3714 - 1440= 2274    |          
+| SUNDAY 20    | 00:00-00:00 (1440 mn)  | 2274 - 1440= 834     |           
+| MONDAY 21    | 00:00-13:54 (834 mn)   |                      |
 
+
+Result : 2026-09-21T13:54
 
 ## Local date with holiday and specific time
 
-July 13 and July 14 with special time, only morning
+May 14 (ascension day) and May 15 special time, only morning
+
+Start date:  2026-05-13T15:18
+Duration: PT20H = 1200 mn
+Business calendar :
+Monday=09:00:00-18:00:00",
+Tuesday=09:00:00-18:00:00",
+Wednesday=09:00:00-18:00:00",
+Thursday=09:00:00-18:00:00",
+Friday=09:00:00-18:00:00",
+Day_2026/05/14=09:00-11:40", // Ascension day : it's a holiday in France, but we are open
+Day_2026/05/15=09:00-11:50"); // Day after Ascension
+
+Use Holiday true / FR
 
 
+| Day                    | Use                    | Relicat           |
+|------------------------|------------------------|-------------------|
+| WEDNESDAY (2026-05-13) | 15:18-18:00 (162 mn)   | 1200 - 162 = 1038 |
+| THURSDAY (2026-05-14)  | 09:00-11:40 (160 mn)   | 1038 - 160 = 878  |
+| FRIDAY (2026-05-15)    | 09:00-11:50 (170 mn)   | 878 - 170 = 708   |
+| MONDAY (2026-05-18)    | 09:00-17:18 (540 mn)   | 708 - 540 = 168   |
+| TUESDAY (2026-05-19)   |  09:00-11:48 (168 mn)  |                   | 
+
+Result is 2026-05-19T11:48
 
 ## Zoned time
 

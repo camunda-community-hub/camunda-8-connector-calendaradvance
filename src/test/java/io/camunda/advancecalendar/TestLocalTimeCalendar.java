@@ -21,8 +21,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 
-public class TestCalendar {
-    private final Logger logger = LoggerFactory.getLogger(TestCalendar.class.getName());
+public class TestLocalTimeCalendar {
+    private final Logger logger = LoggerFactory.getLogger(TestLocalTimeCalendar.class.getName());
 
     @Test
     public void testHourForwardHoliday() {
@@ -300,6 +300,7 @@ public class TestCalendar {
             assert false;
         }
     }
+
     @Test
     public void test247Reverse() {
         CalendarAdvanceInput calendarInput = new CalendarAdvanceInput();
@@ -331,4 +332,125 @@ public class TestCalendar {
             assert false;
         }
     }
+
+    @Test
+    public void testSpecificDate() {
+        CalendarAdvanceInput calendarInput = new CalendarAdvanceInput();
+        OutboundConnectorContext context = mock(OutboundConnectorContext.class);
+        // make bindVariables return your prepared input
+        when(context.bindVariables(CalendarAdvanceInput.class)).thenReturn(calendarInput);
+
+        // populate your input
+        calendarInput.calendarAdvanceFunction = HourFunction.ADVANCE_HOURS;
+        calendarInput.startDate = "2026-05-13T15:18";
+        calendarInput.direction = CalendarAdvanceInput.DIRECTION_V_FORWARD;
+        calendarInput.duration = "PT20H";
+        calendarInput.useHolidays = true;
+        calendarInput.holidaysCountries = List.of("FR");
+        calendarInput.businessCalendar =  List.of("Monday=09:00:00-18:00:00",
+                "Tuesday=09:00:00-18:00:00",
+                "Wednesday=09:00:00-18:00:00",
+                "Thursday=09:00:00-18:00:00",
+                "Friday=09:00:00-18:00:00",
+                SlotContainer.SPECIFIC_DAY_PREFIX+"2026/05/14=09:00-11:40", // Ascension day : it's a holiday in France, but we are open
+                SlotContainer.SPECIFIC_DAY_PREFIX+"2026/05/15=09:00-11:50"); // Day after Ascension
+
+        CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
+        try {
+            CalendarAdvanceOutput output = calendarFunction.execute(context);
+
+            logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]", output.foundDate, output.resultDate, output.resultZonedDate,
+                    output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+
+            assertTrue(output.foundDate);
+            assert (output.resultDate.truncatedTo(ChronoUnit.MINUTES).equals(LocalDateTime.of(2026, 5, 19, 11, 48)));
+            assertNull(output.resultZonedDate);
+            logger.info("testSpecificDate OK ");
+        } catch (Exception e) {
+            logger.error("testSpecificDate", e);
+            assert false;
+        }
+    }
+
+    @Test
+    public void testAfterPeriodSpecificDate() {
+        CalendarAdvanceInput calendarInput = new CalendarAdvanceInput();
+        OutboundConnectorContext context = mock(OutboundConnectorContext.class);
+        // make bindVariables return your prepared input
+        when(context.bindVariables(CalendarAdvanceInput.class)).thenReturn(calendarInput);
+
+        // populate your input
+        calendarInput.calendarAdvanceFunction = HourFunction.ADVANCE_HOURS;
+        calendarInput.startDate = "2026-05-14T15:18";
+        calendarInput.direction = CalendarAdvanceInput.DIRECTION_V_FORWARD;
+        calendarInput.duration = "PT20H";
+        calendarInput.useHolidays = true;
+        calendarInput.holidaysCountries = List.of("FR");
+        calendarInput.businessCalendar =  List.of("Monday=09:00:00-18:00:00",
+                "Tuesday=09:00:00-18:00:00",
+                "Wednesday=09:00:00-18:00:00",
+                "Thursday=09:00:00-18:00:00",
+                "Friday=09:00:00-18:00:00",
+                SlotContainer.SPECIFIC_DAY_PREFIX+"2026/05/14=09:00-12:00", // Ascension day : but start time is AFTER
+                SlotContainer.SPECIFIC_DAY_PREFIX+"2026/05/15=09:00-12:00"); // Day after Ascension
+
+
+
+        CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
+        try {
+            CalendarAdvanceOutput output = calendarFunction.execute(context);
+
+            logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]", output.foundDate, output.resultDate, output.resultZonedDate,
+                    output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+
+            assertTrue(output.foundDate);
+            assert (output.resultDate.truncatedTo(ChronoUnit.MINUTES).equals(LocalDateTime.of(2026, 5, 19, 17, 0)));
+            assertNull(output.resultZonedDate);
+            logger.info("testSpecificDate OK ");
+        } catch (Exception e) {
+            logger.error("testSpecificDate", e);
+            assert false;
+        }
+    }
+
+    @Test
+    public void testAftertwoPeriodsSpecificDate() {
+        CalendarAdvanceInput calendarInput = new CalendarAdvanceInput();
+        OutboundConnectorContext context = mock(OutboundConnectorContext.class);
+        // make bindVariables return your prepared input
+        when(context.bindVariables(CalendarAdvanceInput.class)).thenReturn(calendarInput);
+
+        // populate your input
+        calendarInput.calendarAdvanceFunction = HourFunction.ADVANCE_HOURS;
+        calendarInput.startDate = "2026-05-14T13:18"; // start mid-second period
+        calendarInput.direction = CalendarAdvanceInput.DIRECTION_V_FORWARD;
+        calendarInput.duration = "PT20H";
+        calendarInput.useHolidays = true;
+        calendarInput.holidaysCountries = List.of("FR");
+        calendarInput.businessCalendar =  List.of("Monday=09:00:00-18:00:00",
+                "Tuesday=09:00:00-18:00:00",
+                "Wednesday=09:00:00-18:00:00",
+                "Thursday=09:00:00-18:00:00",
+                "Friday=09:00:00-18:00:00",
+                SlotContainer.SPECIFIC_DAY_PREFIX+"2026/05/14=09:00-12:00, 13:00-14:30, 17:00-19:00", // Ascension day : it's a holiday in France, but we are open
+                SlotContainer.SPECIFIC_DAY_PREFIX+"2026/05/15=09:00-12:00"); // Day after Ascension
+
+
+        CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
+        try {
+            CalendarAdvanceOutput output = calendarFunction.execute(context);
+
+            logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]", output.foundDate, output.resultDate, output.resultZonedDate,
+                    output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+
+            assertTrue(output.foundDate);
+            assert (output.resultDate.truncatedTo(ChronoUnit.MINUTES).equals(LocalDateTime.of(2026, 5, 19, 13, 48)));
+            assertNull(output.resultZonedDate);
+            logger.info("testSpecificDate OK ");
+        } catch (Exception e) {
+            logger.error("testSpecificDate", e);
+            assert false;
+        }
+    }
+
 }

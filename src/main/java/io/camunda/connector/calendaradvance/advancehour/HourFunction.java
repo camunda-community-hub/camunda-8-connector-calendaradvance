@@ -36,7 +36,7 @@ public class HourFunction implements SubFunction {
     @Override
     public CalendarAdvanceOutput executeSubFunction(CalendarAdvanceInput calendarInput, OutboundConnectorContext outboundConnectorContext) throws ConnectorException {
 
-        logger.debug("AdanceDayFunction Start");
+        logger.debug("HourFunction Start");
         try {
 
             // First, calculate the date according all parameters
@@ -78,7 +78,7 @@ public class HourFunction implements SubFunction {
                         lastPeriod = SlotContainer.Period.getPeriod(advanceResult.period.dayOfWeek,
                                         advanceResult.period.startTime,
                                         cursor.toLocalTime())
-                                .setDateOfPeriod(cursor.toLocalDate());
+                                .setDateOfPeriod(advanceResult.periodDate);
                     } else {
                         // Attention, end of the period may my MIDNIGHT, i.e. 23:59+1
                         if (LocalTime.MIDNIGHT.equals(advanceResult.period.endTime) || SlotContainer.MIDNIGHT_MINUS.equals(advanceResult.period.endTime))
@@ -90,7 +90,7 @@ public class HourFunction implements SubFunction {
                         lastPeriod = SlotContainer.Period.getPeriod(advanceResult.period.dayOfWeek,
                                         cursor.toLocalTime(),
                                         advanceResult.period.endTime)
-                                .setDateOfPeriod(cursor.toLocalDate());
+                                .setDateOfPeriod(advanceResult.periodDate);
 
                     }
                     calendarOutput.listPeriods.add(lastPeriod);
@@ -100,7 +100,7 @@ public class HourFunction implements SubFunction {
                 }
                 durationInMinutes -= advanceResult.period.getMinutes();
 
-                calendarOutput.listPeriods.add(advanceResult.period.cloneForRealPeriod(cursor.toLocalDate()));
+                calendarOutput.listPeriods.add(advanceResult.period.cloneForRealPeriod(advanceResult.periodDate));
 
                 cursor = advanceResult.newDate;
                 logger.debug("AdvanceDayFunction Period [{}-{}]: {} mn : now {} for {} mn", advanceResult.period.startTime, advanceResult.period.endTime, advanceResult.period.getMinutes(), cursor, durationInMinutes);
@@ -162,6 +162,13 @@ public class HourFunction implements SubFunction {
     @Override
     public Map<String, String> getBpmnErrors() {
         return Map.of(CalendarAdvanceError.ERROR_BAD_DURATION, CalendarAdvanceError.ERROR_BAD_DURATION_EXPLANATION,
-                CalendarAdvanceError.ERROR_DURING_OPERATION, CalendarAdvanceError.ERROR_DURING_OPERATION_EXPLANATION);
+                CalendarAdvanceError.ERROR_DURING_OPERATION, CalendarAdvanceError.ERROR_DURING_OPERATION_EXPLANATION,
+                CalendarAdvanceError.ERROR_CANT_GET_HOLIDAYS, CalendarAdvanceError.ERROR_CANT_GET_HOLIDAYS_EXPLANATION,
+                CalendarAdvanceError.ERROR_NO_COUNTRIESCODE, CalendarAdvanceError.ERROR_NO_COUNTRIESCODE_EXPLANATION,
+                CalendarAdvanceError.ERROR_NO_REFERENCE_START_DATE, CalendarAdvanceError.ERROR_NO_REFERENCE_START_DATE_EXPLANATION,
+                CalendarAdvanceError.ERROR_BAD_PERIOD, CalendarAdvanceError.ERROR_BAD_PERIOD_EXPLANATION,
+                CalendarAdvanceError.ERROR_BAD_INPUTPARAMETER, CalendarAdvanceError.ERROR_BAD_INPUTPARAMETER_EXPLANATION
+        );
+
     }
 }

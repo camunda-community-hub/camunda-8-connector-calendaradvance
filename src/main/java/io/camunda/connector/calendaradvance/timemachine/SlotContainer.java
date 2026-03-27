@@ -1,6 +1,9 @@
 package io.camunda.connector.calendaradvance.timemachine;
 
 
+import io.camunda.connector.api.error.ConnectorException;
+import io.camunda.connector.calendaradvance.toolbox.CalendarAdvanceError;
+
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -19,12 +22,13 @@ public class SlotContainer {
      * But when we search the period on day 8, we must manage this situation and assume the end of the day is not 23:59:50 but midnight, so the period calculation is correctly the full day
      */
     public final static LocalTime MIDNIGHT_MINUS = LocalTime.MIDNIGHT.minusNanos(1);
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+    private static final DateTimeFormatter formatterSpecificDay = DateTimeFormatter.ofPattern("yyyy/MM/dd");
     private static final List<String> defaultListSlots = List.of("Monday=09:00:00-18:00:00",
             "Tuesday=09:00:00-18:00:00",
             "Wednesday=09:00:00-18:00:00",
             "Thursday=09:00:00-18:00:00",
             "Friday=09:00:00-18:00:00");
+    public static final String SPECIFIC_DAY_PREFIX = "DAY_";
     private final List<Period> specificPeriods = new ArrayList<>();
     private Map<DayOfWeek, List<Period>> daysPeriods = new HashMap<>();
 
@@ -59,18 +63,22 @@ public class SlotContainer {
         for (String slot : listSlots) {
             String[] parts = slot.split("=");
             if (parts.length < 2) {
-                continue;
+                throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_PERIOD, "A period must follow <day>=<value>. Period [{}] don't follow this pattern");
             }
             String day = parts[0];
             String[] periods = parts[1].split(",");
 
             for (String onePeriod : periods) {
                 String[] slice = onePeriod.split("-");
+                if (slice.length != 2) {
+                    throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_PERIOD, "A period must follow <day>=<period>[,*] . <period> is <localtime>-<localtime> like 09:00-12:30. Period does not contains a - ");
+
+                }
                 Period period = new Period();
-                period.startTime = LocalTime.parse(slice[0]);
-                period.endTime = LocalTime.parse(slice[1]);
-                if (day.toUpperCase().startsWith("DAY")) {
-                    period.specificDay = LocalDate.parse(day, formatter);
+                period.startTime = parseLocalTimeWithException(slice[0], slot);
+                period.endTime = parseLocalTimeWithException(slice[1], slot);
+                if (day.toUpperCase().startsWith(SPECIFIC_DAY_PREFIX)) {
+                    period.specificDay = parseLocalDateWithException(day.substring(SPECIFIC_DAY_PREFIX.length()), slot);
                     specificPeriods.add(period);
                 } else {
                     period.dayOfWeek = DayOfWeek.valueOf(day.toUpperCase());
@@ -81,6 +89,7 @@ public class SlotContainer {
             }
         }
     }
+
 
     public LocalDateTime advanceNextDay(LocalDateTime cursor, boolean advance) {
         if (advance)
@@ -105,34 +114,41 @@ public class SlotContainer {
         for (int i = 0; i < 100; i++) {
             DayOfWeek currentDay = cursor.getDayOfWeek();
 
+            final LocalDateTime finalCursor = cursor;
             // Specific?
-            AdvanceResult advanceResult = matchSpecific(cursor, advance);
-            if (advanceResult != null) {
-                if (advanceResult.foundPeriod) {
-                    return advanceResult;
-                }
-                // there is period, but nothing, so here we have to move to the next day
-                cursor = advanceNextDay(cursor, advance);
-                continue;
-            }
+            List<Period> listMatchPeriod = specificPeriods.stream()
+                    .filter(p -> p.specificDay != null)
+                    .filter(p -> p.specificDay.getDayOfWeek().equals(currentDay))
+                    .toList();
+
+            // It maybe a specificDay upgrade, but according to the time, maybe  no more period is found
+            boolean foundSpecificDay = ! listMatchPeriod.isEmpty();
+            listMatchPeriod = listMatchPeriod.stream()
+                    .filter(p -> matchPeriod(finalCursor, advance, p))
+                    .toList();
+
             // holiday ?
-            if (useHoliday && HolidayContainer.getInstance().isHoliday(cursor.toLocalDate(), countriesCode)) {
+            if (! foundSpecificDay && useHoliday && HolidayContainer.getInstance().isHoliday(cursor.toLocalDate(), countriesCode)) {
                 // we have to advance
                 cursor = advanceNextDay(cursor, advance);
                 continue;
             }
 
             // Get all periods in this day
-            LocalDateTime finalCursor = cursor;
-            Optional<Period> periodDay = daysPeriods
-                    .getOrDefault(currentDay, List.of())
-                    .stream()
-                    .filter(p -> matchPeriod(finalCursor, advance, p))
-                    // To find the correct period, we must ORDER it according the advance : if there is P1, P2, P3, we must choose the first period in the day
+            if (!foundSpecificDay) {
+                listMatchPeriod = daysPeriods
+                        .getOrDefault(currentDay, List.of())
+                        .stream()
+                        .filter(p -> matchPeriod(finalCursor, advance, p)).toList();
+                // To find the correct period, we must ORDER it according the advance : if there is P1, P2, P3, we must choose the first period in the day
+            }
+            // Now sort the list of periods
+            Optional<Period> periodDay = listMatchPeriod.stream()
                     .sorted(advance
                             ? Comparator.comparing((Period p) -> p.startTime)
                             : Comparator.comparing((Period p) -> p.startTime).reversed())
                     .findFirst();
+
 
             if (periodDay.isPresent()) {
                 return AdvanceResult.getResult(cursor, advance, periodDay.get());
@@ -146,6 +162,28 @@ public class SlotContainer {
         return result;
     }
 
+
+
+    /* ******************************************************************** */
+    /*                                                                      */
+    /*  Private method                                                      */
+    /*                                                                      */
+    /* ******************************************************************** */
+
+    private LocalTime parseLocalTimeWithException(String text, String slot) throws ConnectorException{
+        try {
+            return LocalTime.parse(text.trim());
+        } catch (DateTimeException e) {
+            throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_PERIOD, "Can't parse LocalTime with text[" + text + ") in slot [" + slot + "]");
+        }
+    }
+    private LocalDate parseLocalDateWithException(String text, String slot) throws ConnectorException{
+        try {
+            return LocalDate.parse(text.trim(), formatterSpecificDay);
+        } catch (DateTimeException e) {
+            throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_PERIOD, "Can't parse LocalDate with text[" + text + ") in slot [" + slot + "]");
+        }
+    }
     /**
      * note: if referenceTime= 00:00, it is not possible to kwno if this is 0:00 or 23:59:00
      */
@@ -199,33 +237,11 @@ public class SlotContainer {
 
     }
 
-    /**
-     * @param cursor  cursor of the day
-     * @param advance direction
-     * @return null: no specific day. NoPeriod? Specific day but no period valid
-     */
-
-    private AdvanceResult matchSpecific(LocalDateTime cursor, boolean advance) {
-        DayOfWeek currentDay = cursor.getDayOfWeek();
-        // 1️⃣ specificDay match (priority)
-        List<Period> daySpecific = specificPeriods.stream()
-                .filter(p -> p.specificDay != null)
-                .filter(p -> p.specificDay.getDayOfWeek().equals(currentDay))
-                .toList();
-        if (daySpecific.isEmpty())
-            return null;
-
-
-        for (Period specific : daySpecific) {
-            if (matchPeriod(cursor, advance, specific)) {
-                // Ok, we can use this period, else we have to go to the next day
-                return AdvanceResult.getResult(cursor, advance, specific);
-            }
-        }
-        return AdvanceResult.noPeriod();
-
-
-    }
+    /* ******************************************************************** */
+    /*                                                                      */
+    /*  Period                                                              */
+    /*                                                                      */
+    /* ******************************************************************** */
 
     /**
      * The period can reference a day of week (Monday, Thursday) or especially a date (July 14, 2026)
@@ -266,7 +282,8 @@ public class SlotContainer {
         }
 
         public String toString() {
-            return (dayOfWeek == null ? "null" : dayOfWeek.name()) + " "
+            return (dayOfWeek == null ? "" : dayOfWeek.name()) + " "
+                    + (specificDay == null ? "" : specificDay.format(DateTimeFormatter.ISO_LOCAL_DATE) + " ")
                     + (dateOfPeriod == null ? "" : "(" + dateOfPeriod + ") ")
                     + (startTime == null ? "" : startTime.toString()) + "-"
                     + (endTime == null ? "" : endTime.toString())
@@ -285,6 +302,13 @@ public class SlotContainer {
         }
     }
 
+
+    /* ******************************************************************** */
+    /*                                                                      */
+    /*  Advance Result                                                      */
+    /*                                                                      */
+    /* ******************************************************************** */
+
     public static class AdvanceResult {
         public Period referencePeriod;
         public Period period;
@@ -302,28 +326,28 @@ public class SlotContainer {
         /**
          * Return different value according the date and the reference period. Example, referencePeriod is August 9, 09:00-12:00 and reference is 10:12
          * Note: the referenceDate is INSIDE the period on this method
-         *
+         * <p>
          * IF ADVANCE
          * - period = referenceDate - referencePeriod.endTime   ( 10:12-12:00)
          * - nextDate = referencePeriod.endTime  : so August 9, 12:00 (so to search the next period, this period is out)
-         *
+         * <p>
          * Case of full day period  (00:00 - 00:00) because there is not a 23:60
          * - Period: referenceDate - referencePeriod.endTime (10:12 - 00:00) : SAME
          * - nextDate: 00:00 ON THE NEXT DAY
-         *
+         * <p>
          * IF BACKWARD
          * - period = referencePeriod.startTime : referenceDate   ( 09:00 - 10:12)
          * - nextDate = referencePeriod.startTime  : so August 9, 09:00 (so to search the next period, this period is out)
-         *
+         * <p>
          * Case of full day period  (00:00 - 00:00) because there is not a 23:60
          * - period: referencePeriod.startTime - referenceDAte
          * but here there is a special case: the reference Date may be 23:59:59.999999 so the period is adapted again to 00-00
          * - nextDay: referencePeriod.startTime SAME: Which is 00:00. Next round on the same day will find nothing
-         *
+         * <p>
          * other field like referencePeriod and dayOfWeek are evident
          *
-         * @param referenceDate referenceDate to calculate the new period
-         * @param advance direction
+         * @param referenceDate   referenceDate to calculate the new period
+         * @param advance         direction
          * @param referencePeriod referencePeriod to calculate from
          * @return the advanceResult information
          */
@@ -361,4 +385,5 @@ public class SlotContainer {
             return advanceResult;
         }
     }
+
 }

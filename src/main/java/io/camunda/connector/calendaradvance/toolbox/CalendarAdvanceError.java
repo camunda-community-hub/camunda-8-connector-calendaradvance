@@ -15,11 +15,19 @@ public class CalendarAdvanceError {
     public static final String ERROR_NO_REFERENCE_START_DATE = "ERROR_NO_REFERENCE_START_DATE";
     public static final String ERROR_NO_REFERENCE_START_DATE_EXPLANATION = "A reference start date must be provided in the correct format";
 
+
+    public static final String ERROR_NO_COUNTRIESCODE = "ERROR_NO_COUNTRIESCODE";
+    public static final String ERROR_NO_COUNTRIESCODE_EXPLANATION = "When useHoliday is true, countries code must be set";
+
     public static final String ERROR_BAD_DURATION = "ERROR_BAD_DURATION";
     public static final String ERROR_BAD_DURATION_EXPLANATION = "Duration must be an ISO8601 format: P3D or PT14H54M or P2DT14H";
 
 
     public static final String ERROR_CANT_GET_HOLIDAYS = "ERROR_CANT_GET_HOLIDAYS";
     public static final String ERROR_CANT_GET_HOLIDAYS_EXPLANATION = "Error during access the calendar";
+
+    public static final String ERROR_BAD_PERIOD = "ERROR_BAD_PERIOD";
+    public static final String ERROR_BAD_PERIOD_EXPLANATION = "A period must follow the pattern <day>=<value>";
+
 
 }
