@@ -9,6 +9,9 @@ public class CalendarAdvanceError {
     public static final String ERROR_BAD_INPUTPARAMETER_EXPLANATION = "During the bind, some input does not have the expected type";
 
 
+    public static final String ERROR_BAD_STARTDATE = "ERROR_BAD_STARTDATE";
+    public static final String ERROR_BAD_STARTDATE_EXPLANATION = "Bad start date, can't decode it";
+
     public static final String ERROR_DURING_OPERATION = "ERROR_DURING_OPERATION";
     public static final String ERROR_DURING_OPERATION_EXPLANATION = "Error during the operation";
 

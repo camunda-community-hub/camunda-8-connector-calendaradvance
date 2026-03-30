@@ -113,6 +113,8 @@ public class CalendarAdvanceInput implements CherryInput {
     @JsonIgnoreProperties(ignoreUnknown = true)
     private ZoneOffset calculatedInputZoneoffset;
 
+    private boolean zonedDateTime =false;
+
     public String getCalendarAdvanceFunction() {
         return calendarAdvanceFunction;
     }
@@ -156,6 +158,23 @@ public class CalendarAdvanceInput implements CherryInput {
 
     public ZoneOffset getCalculatedZoneOffset() {
         return calculatedInputZoneoffset;
+    }
+
+    /**
+     * Force the zoneOffset
+     * @param calculatedZoneOffset force this zoneOffset
+     */
+    public void forceZoneOffset(ZoneOffset calculatedZoneOffset) {
+        this.calculatedInputZoneoffset = calculatedZoneOffset;
+        zonedDateTime =true;
+    }
+
+    /**
+     * Return true if at input, a zoned date time was provided
+     * @return true if the date is zoned
+     */
+    public boolean isZonedDateTime() {
+        return zonedDateTime;
     }
 
     public Object getStartDate() {
@@ -214,8 +233,9 @@ public class CalendarAdvanceInput implements CherryInput {
                 return;
             }
             // String ZonedDateTime
-            if (startDateString.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:Z|[+-]\\d{2}:\\d{2})\\[[A-Za-z_]+(?:/[A-Za-z_]+)+\\]$")) {
-                ZonedDateTime zdt = ZonedDateTime.parse(startDateString);
+            if (startDateString.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{4})\\[[A-Za-z_]+(?:/[A-Za-z_]+)*\\]$")) {
+                DateTimeFormatter formatter =       DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ'['VV']'");
+                ZonedDateTime zdt = ZonedDateTime.parse(startDateString,formatter);
                 calculatedFromZonedDateTime(zdt);
                 return;
             }
@@ -227,6 +247,7 @@ public class CalendarAdvanceInput implements CherryInput {
 
         } catch (Exception e) {
             logger.error("Error getting reference date", e);
+            throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_STARTDATE, "Error getting reference date", e);
         }
 
     }
@@ -244,6 +265,7 @@ public class CalendarAdvanceInput implements CherryInput {
     }
 
     private void calculatedFromZonedDateTime(ZonedDateTime zdt) {
+        zonedDateTime =true;
         calculatedInputLocalDateTime = zdt.toLocalDateTime();
         ZoneId businessCalendarZoneId = getBusinessZoneId();
         if (businessCalendarZoneId != null) {
@@ -254,11 +276,13 @@ public class CalendarAdvanceInput implements CherryInput {
     }
 
     private void calculatedFromOffsetDateTime(OffsetDateTime odt) {
+        zonedDateTime =true;
         calculatedInputLocalDateTime = odt.toLocalDateTime();
         ZoneId businessCalendarZoneId = getBusinessZoneId();
         if (businessCalendarZoneId != null) {
             calculatedInputZoneoffset = businessCalendarZoneId.getRules()
                     .getOffset(odt.toInstant());
+            zonedDateTime =true;
         }
     }
 

@@ -32,6 +32,8 @@ public class SlotContainer {
     private final List<Period> specificPeriods = new ArrayList<>();
     private Map<DayOfWeek, List<Period>> daysPeriods = new HashMap<>();
 
+    public boolean is247Calendar = false;
+
     /**
      * Give the list of slot
      * A slot is <Day>=<period>+
@@ -48,7 +50,8 @@ public class SlotContainer {
         }
 
         // Special use case
-        if (listSlots.size() == 1 && SLOT_24_7.equals(listSlots.get(0))) {
+        if (listSlots.size() == 1 && SLOT_24_7.equals(listSlots.getFirst())) {
+            is247Calendar = true;
             daysPeriods = new HashMap<>();
             daysPeriods.put(DayOfWeek.MONDAY, List.of(Period.getPeriod(DayOfWeek.MONDAY, LocalTime.MIDNIGHT, LocalTime.MIDNIGHT)));
             daysPeriods.put(DayOfWeek.TUESDAY, List.of(Period.getPeriod(DayOfWeek.TUESDAY, LocalTime.MIDNIGHT, LocalTime.MIDNIGHT)));
@@ -122,13 +125,13 @@ public class SlotContainer {
                     .toList();
 
             // It maybe a specificDay upgrade, but according to the time, maybe  no more period is found
-            boolean foundSpecificDay = ! listMatchPeriod.isEmpty();
+            boolean foundSpecificDay = !listMatchPeriod.isEmpty();
             listMatchPeriod = listMatchPeriod.stream()
                     .filter(p -> matchPeriod(finalCursor, advance, p))
                     .toList();
 
             // holiday ?
-            if (! foundSpecificDay && useHoliday && HolidayContainer.getInstance().isHoliday(cursor.toLocalDate(), countriesCode)) {
+            if (!foundSpecificDay && useHoliday && HolidayContainer.getInstance().isHoliday(cursor.toLocalDate(), countriesCode)) {
                 // we have to advance
                 cursor = advanceNextDay(cursor, advance);
                 continue;
@@ -157,12 +160,16 @@ public class SlotContainer {
         }
 
         // not found after x iterations
-        AdvanceResult result = new AdvanceResult();
-        result.foundPeriod = false;
-        return result;
+        return AdvanceResult.noPeriod();
     }
 
-
+    /**
+     * If the calendar is a full 24/7 calendar, then we can consider it as valid in any timezone, and a ZonedCalendar request can be served.
+     * @return true if the calendar is a 24/7
+     */
+    public boolean is247Calendar() {
+        return is247Calendar;
+    }
 
     /* ******************************************************************** */
     /*                                                                      */
@@ -170,28 +177,30 @@ public class SlotContainer {
     /*                                                                      */
     /* ******************************************************************** */
 
-    private LocalTime parseLocalTimeWithException(String text, String slot) throws ConnectorException{
+    private LocalTime parseLocalTimeWithException(String text, String slot) throws ConnectorException {
         try {
             return LocalTime.parse(text.trim());
         } catch (DateTimeException e) {
             throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_PERIOD, "Can't parse LocalTime with text[" + text + ") in slot [" + slot + "]");
         }
     }
-    private LocalDate parseLocalDateWithException(String text, String slot) throws ConnectorException{
+
+    private LocalDate parseLocalDateWithException(String text, String slot) throws ConnectorException {
         try {
             return LocalDate.parse(text.trim(), formatterSpecificDay);
         } catch (DateTimeException e) {
             throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_PERIOD, "Can't parse LocalDate with text[" + text + ") in slot [" + slot + "]");
         }
     }
+
     /**
      * note: if referenceTime= 00:00, it is not possible to kwno if this is 0:00 or 23:59:00
      */
     private boolean matchPeriod(LocalDateTime reference, boolean advance, Period period) {
         LocalTime referenceTime = reference.toLocalTime();
 
-        // the LocalTime.MIDNIGHT convention for endTime : then this is the end of the day
         /**
+         * the LocalTime. MIDNIGHT convention for endTime : then this is the end of the day
          * The reference is strictly INSIDE the period: GOOD
          *  START   R     END
          */

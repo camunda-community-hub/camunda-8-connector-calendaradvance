@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -50,7 +51,12 @@ public class HourFunction implements SubFunction {
 
             SlotContainer slotContainer = new SlotContainer();
             slotContainer.setSlots(calendarInput.getBusinessCalendar());
-            calendarInput.calculateReferenceDateLocalDateTime();
+
+            // There is a special use case here: if a ZonedDateTime is given AND the slotContainer is a 24/7, then we can enable the zoned callation: offset is just set to 0
+            if (slotContainer.is247Calendar() && calendarInput.isZonedDateTime()) {
+                calendarInput.forceZoneOffset(ZoneOffset.ofHours(0));
+            }
+
             LocalDateTime cursor = calendarInput.getCalculatedStartDateLocalDateTime();
 
 
@@ -108,10 +114,17 @@ public class HourFunction implements SubFunction {
             }
             calendarOutput.foundDate = true;
             calendarOutput.resultDate = cursor;
-            if (calendarInput.getCalculatedZoneOffset() != null && calendarInput.getBusinessZoneId() != null) {
+            if (calendarInput.getCalculatedZoneOffset() != null &&
+                    (calendarInput.getBusinessZoneId() != null || slotContainer.is247Calendar()) ) {
                 // resuoltDate is on the Business Calendar TimeZone, then we apply the offset reverse
-                ZonedDateTime zdt = cursor.atZone(calendarInput.getBusinessZoneId());
-                calendarOutput.resultZonedDate = zdt.withZoneSameInstant(calendarInput.getCalculatedZoneOffset());
+                ZonedDateTime zdt=null;
+                if (calendarInput.getBusinessZoneId()!=null) {
+                    zdt = cursor.atZone(calendarInput.getBusinessZoneId());
+                } else if (calendarInput.getCalculatedZoneOffset()!=null) {
+                    zdt=cursor.atZone(calendarInput.getCalculatedZoneOffset());
+                }
+
+                calendarOutput.resultZonedDate = zdt ==null? null:zdt.withZoneSameInstant(calendarInput.getCalculatedZoneOffset());
             }
             return calendarOutput;
 
@@ -167,7 +180,8 @@ public class HourFunction implements SubFunction {
                 CalendarAdvanceError.ERROR_NO_COUNTRIESCODE, CalendarAdvanceError.ERROR_NO_COUNTRIESCODE_EXPLANATION,
                 CalendarAdvanceError.ERROR_NO_REFERENCE_START_DATE, CalendarAdvanceError.ERROR_NO_REFERENCE_START_DATE_EXPLANATION,
                 CalendarAdvanceError.ERROR_BAD_PERIOD, CalendarAdvanceError.ERROR_BAD_PERIOD_EXPLANATION,
-                CalendarAdvanceError.ERROR_BAD_INPUTPARAMETER, CalendarAdvanceError.ERROR_BAD_INPUTPARAMETER_EXPLANATION
+                CalendarAdvanceError.ERROR_BAD_INPUTPARAMETER, CalendarAdvanceError.ERROR_BAD_INPUTPARAMETER_EXPLANATION,
+                CalendarAdvanceError.ERROR_BAD_STARTDATE, CalendarAdvanceError.ERROR_BAD_STARTDATE_EXPLANATION
         );
 
     }
