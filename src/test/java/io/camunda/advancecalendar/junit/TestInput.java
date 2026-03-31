@@ -1,10 +1,9 @@
-package io.camunda.advancecalendar;
+package io.camunda.advancecalendar.junit;
 
 import io.camunda.connector.api.error.ConnectorException;
 import io.camunda.connector.api.outbound.OutboundConnectorContext;
 import io.camunda.connector.calendaradvance.CalendarAdvanceFunction;
 import io.camunda.connector.calendaradvance.CalendarAdvanceInput;
-import io.camunda.connector.calendaradvance.CalendarAdvanceOutput;
 import io.camunda.connector.calendaradvance.advancehour.HourFunction;
 import io.camunda.connector.calendaradvance.timemachine.SlotContainer;
 import io.camunda.connector.calendaradvance.toolbox.CalendarAdvanceError;

@@ -54,7 +54,7 @@ public class HourFunction implements SubFunction {
 
             // There is a special use case here: if a ZonedDateTime is given AND the slotContainer is a 24/7, then we can enable the zoned callation: offset is just set to 0
             if (slotContainer.is247Calendar() && calendarInput.isZonedDateTime()) {
-                calendarInput.forceZoneOffset(ZoneOffset.ofHours(0));
+                calendarInput.forceStartZoneOffset(ZoneOffset.ofHours(0));
             }
 
             LocalDateTime cursor = calendarInput.getCalculatedStartDateLocalDateTime();
@@ -114,17 +114,17 @@ public class HourFunction implements SubFunction {
             }
             calendarOutput.foundDate = true;
             calendarOutput.resultDate = cursor;
-            if (calendarInput.getCalculatedZoneOffset() != null &&
+            if (calendarInput.getCalculatedStartDateZoneOffset() != null &&
                     (calendarInput.getBusinessZoneId() != null || slotContainer.is247Calendar()) ) {
-                // resuoltDate is on the Business Calendar TimeZone, then we apply the offset reverse
+                // resultDate is on the Business Calendar TimeZone, then we apply the offset reverse
                 ZonedDateTime zdt=null;
                 if (calendarInput.getBusinessZoneId()!=null) {
                     zdt = cursor.atZone(calendarInput.getBusinessZoneId());
-                } else if (calendarInput.getCalculatedZoneOffset()!=null) {
-                    zdt=cursor.atZone(calendarInput.getCalculatedZoneOffset());
+                } else if (calendarInput.getCalculatedStartDateZoneOffset()!=null) {
+                    zdt=cursor.atZone(calendarInput.getCalculatedStartDateZoneOffset());
                 }
 
-                calendarOutput.resultZonedDate = zdt ==null? null:zdt.withZoneSameInstant(calendarInput.getCalculatedZoneOffset());
+                calendarOutput.resultZonedDate = zdt ==null? null: zdt.toInstant().atOffset( calendarInput.getCalculatedStartDateZoneOffset()).toZonedDateTime();
             }
             return calendarOutput;
 

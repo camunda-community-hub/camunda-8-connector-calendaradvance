@@ -283,24 +283,51 @@ Day_2026/05/15=09:00-11:50"); // Day after Ascension
 Use Holiday true / FR
 
 
-| Day                    | Use                    | Relicat           |
-|------------------------|------------------------|-------------------|
-| WEDNESDAY (2026-05-13) | 15:18-18:00 (162 mn)   | 1200 - 162 = 1038 |
-| THURSDAY (2026-05-14)  | 09:00-11:40 (160 mn)   | 1038 - 160 = 878  |
-| FRIDAY (2026-05-15)    | 09:00-11:50 (170 mn)   | 878 - 170 = 708   |
-| MONDAY (2026-05-18)    | 09:00-17:18 (540 mn)   | 708 - 540 = 168   |
-| TUESDAY (2026-05-19)   |  09:00-11:48 (168 mn)  |                   | 
+| Day                    | Use                   | Relicat           |
+|------------------------|-----------------------|-------------------|
+| WEDNESDAY (2026-05-13) | 15:18-18:00 (162 mn)  | 1200 - 162 = 1038 |
+| THURSDAY (2026-05-14)  | 09:00-11:40 (160 mn)  | 1038 - 160 = 878  |
+| FRIDAY (2026-05-15)    | 09:00-11:50 (170 mn)  | 878 - 170 = 708   |
+| MONDAY (2026-05-18)    | 09:00-17:18 (540 mn)  | 708 - 540 = 168   |
+| TUESDAY (2026-05-19)   | 09:00-11:48 (168 mn)  |                   | 
 
 Result is 2026-05-19T11:48
 
-## Zoned time
+## Zoned time after (business day in Los Angeles)
 
 09:15 EAST 
 Calendar 09:00-18:00 PACIFIC TIME
 
-Advance 2:10 hours
-==> Result should be 11:10 local time==> 14:10 EAST
+Advance 2:10 hours = 130 mn
 
+09:15 America/New_York => 06:15 America/Los Angeles
+
+| Day                  | Use                  | Relicat |
+|----------------------|----------------------|---------|
+| MONDAY (2026-03-30)  | 09:00-18:00 (130 mn) |         |
+
+Result is 
+Local Time: 11:10
+ZonedDateTime (New_York) : 14:10 
+
+## Zoned time before (business day in New_York)
+
+15:20 DENVER
+Calendar 09:00-18:00 NEW YORK TIME
+
+Advance 2:10 hours = 130 mn
+
+15:20 America/Denver => 17:20 America/New_York
+
+| Day                  | Use                 | Relicat       |
+|----------------------|---------------------|---------------|
+| MONDAY (2026-03-30)  | 17:20-18:00 (40 mn) | 130 - 40 = 90 |
+| TUESDAY (2026-03-31) | 09:00-10:30 (90 mn) |               |
+
+
+Result is
+Local Time: 10:30
+ZonedDateTime (Denver) : 8:30
 
 
 ## Advance day

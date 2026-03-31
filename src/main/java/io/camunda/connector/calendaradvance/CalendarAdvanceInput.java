@@ -111,9 +111,9 @@ public class CalendarAdvanceInput implements CherryInput {
     @JsonIgnoreProperties(ignoreUnknown = true)
     private LocalDateTime calculatedInputLocalDateTime;
     @JsonIgnoreProperties(ignoreUnknown = true)
-    private ZoneOffset calculatedInputZoneoffset;
+    private ZoneOffset calculatedInputStartDateZoneOffset;
 
-    private boolean zonedDateTime =false;
+    private boolean zonedDateTime = false;
 
     public String getCalendarAdvanceFunction() {
         return calendarAdvanceFunction;
@@ -156,21 +156,23 @@ public class CalendarAdvanceInput implements CherryInput {
         return calculatedInputLocalDateTime;
     }
 
-    public ZoneOffset getCalculatedZoneOffset() {
-        return calculatedInputZoneoffset;
+    public ZoneOffset getCalculatedStartDateZoneOffset() {
+        return calculatedInputStartDateZoneOffset;
     }
 
     /**
      * Force the zoneOffset
+     *
      * @param calculatedZoneOffset force this zoneOffset
      */
-    public void forceZoneOffset(ZoneOffset calculatedZoneOffset) {
-        this.calculatedInputZoneoffset = calculatedZoneOffset;
-        zonedDateTime =true;
+    public void forceStartZoneOffset(ZoneOffset calculatedZoneOffset) {
+        this.calculatedInputStartDateZoneOffset = calculatedZoneOffset;
+        zonedDateTime = true;
     }
 
     /**
      * Return true if at input, a zoned date time was provided
+     *
      * @return true if the date is zoned
      */
     public boolean isZonedDateTime() {
@@ -206,7 +208,7 @@ public class CalendarAdvanceInput implements CherryInput {
         try {
             if (startDate == null) {
                 calculatedInputLocalDateTime = null;
-                calculatedInputZoneoffset = null;
+                calculatedInputStartDateZoneOffset = null;
                 return;
             }
 
@@ -233,12 +235,14 @@ public class CalendarAdvanceInput implements CherryInput {
                 return;
             }
             // String ZonedDateTime
-            if (startDateString.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{4})\\[[A-Za-z_]+(?:/[A-Za-z_]+)*\\]$")) {
-                DateTimeFormatter formatter =       DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ'['VV']'");
-                ZonedDateTime zdt = ZonedDateTime.parse(startDateString,formatter);
+            try {
+                ZonedDateTime zdt = ZonedDateTime.parse(startDateString);
                 calculatedFromZonedDateTime(zdt);
                 return;
+            } catch (DateTimeParseException e) {
+                // do nothing,
             }
+
 
             // no timezone in input → LocalDateTime
             LocalDateTime ldt = LocalDateTime.parse(startDateString);
@@ -260,29 +264,31 @@ public class CalendarAdvanceInput implements CherryInput {
         } else {
             calculatedInputLocalDateTime = ldt;
         }
-        calculatedInputZoneoffset = null;
+        calculatedInputStartDateZoneOffset = null;
 
     }
 
-    private void calculatedFromZonedDateTime(ZonedDateTime zdt) {
-        zonedDateTime =true;
-        calculatedInputLocalDateTime = zdt.toLocalDateTime();
+    private void calculatedFromZonedDateTime(ZonedDateTime startDatezdt) {
+        zonedDateTime = true;
+        calculatedInputLocalDateTime = startDatezdt.toLocalDateTime();
         ZoneId businessCalendarZoneId = getBusinessZoneId();
         if (businessCalendarZoneId != null) {
-            calculatedInputZoneoffset = zdt
-                    .withZoneSameInstant(businessCalendarZoneId)
-                    .getOffset();
+            // We get the time at the Calendar timezone
+            ZonedDateTime calendarTime = startDatezdt.withZoneSameInstant(businessCalendarZoneId);
+            calculatedInputLocalDateTime = calendarTime.toLocalDateTime();
+            calculatedInputStartDateZoneOffset = startDatezdt.getOffset();
+
         }
     }
 
     private void calculatedFromOffsetDateTime(OffsetDateTime odt) {
-        zonedDateTime =true;
+        zonedDateTime = true;
         calculatedInputLocalDateTime = odt.toLocalDateTime();
         ZoneId businessCalendarZoneId = getBusinessZoneId();
         if (businessCalendarZoneId != null) {
-            calculatedInputZoneoffset = businessCalendarZoneId.getRules()
+            calculatedInputStartDateZoneOffset = businessCalendarZoneId.getRules()
                     .getOffset(odt.toInstant());
-            zonedDateTime =true;
+            zonedDateTime = true;
         }
     }
 

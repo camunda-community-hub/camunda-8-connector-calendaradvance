@@ -171,6 +171,20 @@ public class SlotContainer {
         return is247Calendar;
     }
 
+    /**
+     * Return for a beginPeriod; endPeriod, a week slot (Monday to Friday)
+     * @param beginPeriod begin period slot
+     * @param endPeriod end period slot
+     * @return list of slots
+     */
+    public static List getWeekSlots(LocalTime beginPeriod, LocalTime endPeriod) {
+
+        return List.of("Monday="+beginPeriod.toString()+"-"+endPeriod.toString(),
+                "Tuesday="+beginPeriod.toString()+"-"+endPeriod.toString(),
+                "Wednesday="+beginPeriod.toString()+"-"+endPeriod.toString(),
+                "Thursday="+beginPeriod.toString()+"-"+endPeriod.toString(),
+                "Friday="+beginPeriod.toString()+"-"+endPeriod.toString());
+    }
     /* ******************************************************************** */
     /*                                                                      */
     /*  Private method                                                      */
