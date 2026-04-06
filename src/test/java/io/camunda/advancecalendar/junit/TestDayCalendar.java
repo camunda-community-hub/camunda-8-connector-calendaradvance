@@ -42,10 +42,11 @@ public class TestDayCalendar {
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
             CalendarAdvanceOutput output = calendarFunction.execute(context);
-            logger.info("backBusinessDay Result FoundDate:{} resultDate[{}] resultZonedDate[{}]",
+            logger.info("backBusinessDay Result FoundDate:{} resultDate[{}] resultZonedDate[{}] periods[{}]",
                     output.foundDate,
                     output.resultDate.toLocalDate(),
-                    output.resultZonedDate);
+                    output.resultZonedDate,
+                    output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
             // Duration: 730 mn
             // Wednesday 15: 94mn
             // Tuesday 14 : holiday
