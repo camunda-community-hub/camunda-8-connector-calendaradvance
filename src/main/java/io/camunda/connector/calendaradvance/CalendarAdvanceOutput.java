@@ -16,19 +16,24 @@ public class CalendarAdvanceOutput implements CherryOutput {
 
     public static final String OUTPUT_FOUNDDATE = "foundDate";
     public static final String OUTPUT_RESULTDATE = "resultDate";
-    public static final String OUTPUT_LISTPERIOD = "resultDate";
+    public static final String OUTPUT_RESULTZONEDDATE = "resultZonedDate";
+    public static final String OUTPUT_LISTPERIODS = "listPeriods";
     public static final RunnerParameter parameterFoundDate = new RunnerParameter(OUTPUT_FOUNDDATE, // name
             "Found Date", // label
             Boolean.class, // class
-            RunnerParameter.Level.REQUIRED, "Return if a date is found by the calculation");
+            RunnerParameter.Level.OPTIONAL, "Return if a date is found by the calculation");
     public static final RunnerParameter parameterResultDate = new RunnerParameter(OUTPUT_RESULTDATE, // name
             "Result Date", // label
             LocalDateTime.class, // class
-            RunnerParameter.Level.REQUIRED, "Date, LocalDateTime format, returned");
-    public static final RunnerParameter parameterListPeriod = new RunnerParameter(OUTPUT_LISTPERIOD, // name
+            RunnerParameter.Level.OPTIONAL, "Date, LocalDateTime format (2026-03-30T15:20:00)");
+    public static final RunnerParameter parameterResultZonedDate = new RunnerParameter(OUTPUT_RESULTZONEDDATE, // name
+            "Result Zoned Date", // label
+            ZonedDateTime.class, // class
+            RunnerParameter.Level.OPTIONAL, "Zoned Date, ZonedDateTime format (2026-03-30T15:20:00-06:00)");
+    public static final RunnerParameter parameterListPeriods = new RunnerParameter(OUTPUT_LISTPERIODS, // name
             "List of period Date", // label
             LocalDateTime.class, // class
-            RunnerParameter.Level.REQUIRED, "List of period calculated");
+            RunnerParameter.Level.OPTIONAL, "List of period calculated");
     public boolean foundDate;
     public LocalDateTime resultDate;
     public ZonedDateTime resultZonedDate;

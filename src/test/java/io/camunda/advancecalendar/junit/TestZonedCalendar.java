@@ -88,14 +88,14 @@ public class TestZonedCalendar {
         calendarInput.direction = CalendarAdvanceInput.DIRECTION_V_FORWARD;
         calendarInput.duration = "PT2H10M";
         calendarInput.useHolidays = false;
-        calendarInput.businessCalendar = SlotContainer.getWeekSlots(LocalTime.of(9,00), LocalTime.of(18,00));
+        calendarInput.businessCalendar = SlotContainer.getWeekSlots(LocalTime.of(9,0), LocalTime.of(18,0));
         calendarInput.businessTimeZone = "America/Los_Angeles";
 
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
             CalendarAdvanceOutput output = calendarFunction.execute(context);
 
-            logger.info("Result FoundDate:{} resultDate[{}] sourceZoneDate[{}] resultZonedDate[{}] Periods[{}]", output.foundDate, output.resultDate,
+            logger.info("testNewYorkLosAngeles: Result FoundDate:{} resultDate[{}] sourceZoneDate[{}] resultZonedDate[{}] Periods[{}]", output.foundDate, output.resultDate,
                     calendarInput.startDate,
                     output.resultZonedDate,
                     output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
@@ -138,14 +138,14 @@ public class TestZonedCalendar {
         calendarInput.direction = CalendarAdvanceInput.DIRECTION_V_FORWARD;
         calendarInput.duration = "PT2H10M";
         calendarInput.useHolidays = false;
-        calendarInput.businessCalendar = SlotContainer.getWeekSlots(LocalTime.of(9,00), LocalTime.of(18,00));
+        calendarInput.businessCalendar = SlotContainer.getWeekSlots(LocalTime.of(9,0), LocalTime.of(18,0));
         calendarInput.businessTimeZone = "America/New_York";
 
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
             CalendarAdvanceOutput output = calendarFunction.execute(context);
 
-            logger.info("Result FoundDate:{} resultDate[{}] sourceZoneDate[{}] resultZonedDate[{}] Periods[{}]", output.foundDate, output.resultDate,
+            logger.info("testDenverNewYork: Result FoundDate:{} resultDate[{}] sourceZoneDate[{}] resultZonedDate[{}] Periods[{}]", output.foundDate, output.resultDate,
                     calendarInput.startDate,
                     output.resultZonedDate,
                     output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
@@ -162,9 +162,9 @@ public class TestZonedCalendar {
             assert(output.resultZonedDate.getOffset().equals(zdtDenver.getOffset()));
             assertEquals(LocalDateTime.of(2026, 3, 31, 10, 30), output.resultDate);
 
-            logger.info("testNewYorkLosAngeles OK ");
+            logger.info("testDenverNewYork OK ");
         } catch (Exception e) {
-            logger.error("testNewYorkLosAngeles", e);
+            logger.error("testDenverNewYork", e);
             assert false;
         }
     }

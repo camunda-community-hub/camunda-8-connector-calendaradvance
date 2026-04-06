@@ -15,6 +15,7 @@ public class SlotContainer {
 
 
     public static final String SLOT_24_7 = "24/7";
+    public static final List<String> CALENDAR_24_7 = List.of(SLOT_24_7);
     /**
      * the minus namo
      * when we advance in revert with a 24/7 calendar, on dau 9 the "next date" is Day 8 23:59. But doing that, the day 8 will have 1 days -1.
@@ -22,17 +23,32 @@ public class SlotContainer {
      * But when we search the period on day 8, we must manage this situation and assume the end of the day is not 23:59:50 but midnight, so the period calculation is correctly the full day
      */
     public final static LocalTime MIDNIGHT_MINUS = LocalTime.MIDNIGHT.minusNanos(1);
+    public static final String SPECIFIC_DAY_PREFIX = "DAY_";
     private static final DateTimeFormatter formatterSpecificDay = DateTimeFormatter.ofPattern("yyyy/MM/dd");
     private static final List<String> defaultListSlots = List.of("Monday=09:00:00-18:00:00",
             "Tuesday=09:00:00-18:00:00",
             "Wednesday=09:00:00-18:00:00",
             "Thursday=09:00:00-18:00:00",
             "Friday=09:00:00-18:00:00");
-    public static final String SPECIFIC_DAY_PREFIX = "DAY_";
     private final List<Period> specificPeriods = new ArrayList<>();
+    public boolean is247Calendar = false;
     private Map<DayOfWeek, List<Period>> daysPeriods = new HashMap<>();
 
-    public boolean is247Calendar = false;
+    /**
+     * Return for a beginPeriod; endPeriod, a week slot (Monday to Friday)
+     *
+     * @param beginPeriod begin period slot
+     * @param endPeriod   end period slot
+     * @return list of slots
+     */
+    public static List<String> getWeekSlots(LocalTime beginPeriod, LocalTime endPeriod) {
+
+        return List.of("Monday=" + beginPeriod + "-" + endPeriod,
+                "Tuesday=" + beginPeriod + "-" + endPeriod,
+                "Wednesday=" + beginPeriod + "-" + endPeriod,
+                "Thursday=" + beginPeriod + "-" + endPeriod,
+                "Friday=" + beginPeriod + "-" + endPeriod);
+    }
 
     /**
      * Give the list of slot
@@ -93,7 +109,6 @@ public class SlotContainer {
         }
     }
 
-
     public LocalDateTime advanceNextDay(LocalDateTime cursor, boolean advance) {
         if (advance)
             return cursor.toLocalDate().plusDays(1).atStartOfDay();
@@ -113,8 +128,12 @@ public class SlotContainer {
     public AdvanceResult getNextPeriod(LocalDateTime referenceDate, boolean advance, boolean useHoliday, List<String> countriesCode) {
 
         LocalDateTime cursor = referenceDate;
+        // Special case: if the time is MIDNIGHT_MINUS and advance, we transform to next day +1
+        if (cursor.toLocalTime().equals(MIDNIGHT_MINUS) && advance) {
+            cursor = cursor.plusDays(1).toLocalDate().atStartOfDay();
+        }
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 1000; i++) {
             DayOfWeek currentDay = cursor.getDayOfWeek();
 
             final LocalDateTime finalCursor = cursor;
@@ -165,25 +184,11 @@ public class SlotContainer {
 
     /**
      * If the calendar is a full 24/7 calendar, then we can consider it as valid in any timezone, and a ZonedCalendar request can be served.
+     *
      * @return true if the calendar is a 24/7
      */
     public boolean is247Calendar() {
         return is247Calendar;
-    }
-
-    /**
-     * Return for a beginPeriod; endPeriod, a week slot (Monday to Friday)
-     * @param beginPeriod begin period slot
-     * @param endPeriod end period slot
-     * @return list of slots
-     */
-    public static List getWeekSlots(LocalTime beginPeriod, LocalTime endPeriod) {
-
-        return List.of("Monday="+beginPeriod.toString()+"-"+endPeriod.toString(),
-                "Tuesday="+beginPeriod.toString()+"-"+endPeriod.toString(),
-                "Wednesday="+beginPeriod.toString()+"-"+endPeriod.toString(),
-                "Thursday="+beginPeriod.toString()+"-"+endPeriod.toString(),
-                "Friday="+beginPeriod.toString()+"-"+endPeriod.toString());
     }
     /* ******************************************************************** */
     /*                                                                      */
@@ -213,7 +218,7 @@ public class SlotContainer {
     private boolean matchPeriod(LocalDateTime reference, boolean advance, Period period) {
         LocalTime referenceTime = reference.toLocalTime();
 
-        /**
+        /*
          * the LocalTime. MIDNIGHT convention for endTime : then this is the end of the day
          * The reference is strictly INSIDE the period: GOOD
          *  START   R     END
@@ -222,7 +227,7 @@ public class SlotContainer {
             return true;
 
         if (advance) {
-            /**  the reference is AT THE BEGINNING of the period: GOOD
+            /*  the reference is AT THE BEGINNING of the period: GOOD
              *      Advance >>>>>
              *      START
              *      R
@@ -308,8 +313,8 @@ public class SlotContainer {
             return (dayOfWeek == null ? "" : dayOfWeek.name()) + " "
                     + (specificDay == null ? "" : specificDay.format(DateTimeFormatter.ISO_LOCAL_DATE) + " ")
                     + (dateOfPeriod == null ? "" : "(" + dateOfPeriod + ") ")
-                    + (startTime == null ? "" : startTime.toString()) + "-"
-                    + (endTime == null ? "" : endTime.toString())
+                    + (startTime == null ? "" : startTime) + "-"
+                    + (endTime == null ? "" : endTime)
                     + " (" + (startTime != null && endTime != null ? getMinutes() : "") + " mn)";
         }
 

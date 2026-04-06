@@ -35,7 +35,7 @@ public class HolidayContainer {
      */
     public void loadCountries(int year, List<String> countriesCode) {
         for (String countryCode : countriesCode) {
-            CalendarHoliday calendarHoliday = getCalendar(year, countryCode);
+            getCalendar(year, countryCode);
         }
     }
 
@@ -66,9 +66,7 @@ public class HolidayContainer {
     public CalendarHoliday getCalendar(int year, String countryCode) throws ConnectorException {
         String key = countryCode + "-" + year;
         try {
-            return calendars.computeIfAbsent(key, k -> {
-                return loadHoliday(year, countryCode);
-            });
+            return calendars.computeIfAbsent(key, k -> loadHoliday(year, countryCode));
         } catch (RuntimeException e) {
             if (e.getCause() instanceof ConnectorException ce) {
                 throw ce;
@@ -80,13 +78,14 @@ public class HolidayContainer {
     /**
      * Throw a runtime exception to pass the lambda
      *
-     * @param year year of the holiday to load
+     * @param year        year of the holiday to load
      * @param countryCode country code
      * @return the calendar Holiday
-     * @throws RuntimeException
+     * @throws RuntimeException in case of error
      */
     private CalendarHoliday loadHoliday(int year, String countryCode) throws RuntimeException {
         String url = "https://date.nager.at/api/v3/PublicHolidays/" + year + "/" + countryCode;
+        long beginTime = System.currentTimeMillis();
         try {
             logger.debug("Call calendar[{}]", url);
             HttpClient client = HttpClient.newHttpClient();
@@ -110,10 +109,10 @@ public class HolidayContainer {
             for (JsonNode node : root) {
                 calendarHoliday.listDays.add(LocalDate.parse(node.get("date").asText()));
             }
-            logger.info("Call calendar countryCode[{}] Year[{}] url[{}] with success, found {} holiday", countryCode, year, url, calendarHoliday.listDays.size());
+            logger.info("Call calendar countryCode[{}] Year[{}] url[{}] with success, found {} holiday in {} ms", countryCode, year, url, calendarHoliday.listDays.size(), System.currentTimeMillis() - beginTime);
             return calendarHoliday;
         } catch (Exception e) {
-            logger.error("Can't get the calendar for countryCode[{}] Year[{}] url[{}} ", countryCode, year, url, e);
+            logger.error("Can't get the calendar for countryCode[{}] Year[{}] url[{}} in {} ms", countryCode, year, url, System.currentTimeMillis() - beginTime, e);
             throw new RuntimeException(new ConnectorException(CalendarAdvanceError.ERROR_CANT_GET_HOLIDAYS, "Error when trying to load the calendar " + e.getMessage()));
         }
     }
@@ -121,7 +120,7 @@ public class HolidayContainer {
     /**
      * A calendar Holiday
      */
-    private class CalendarHoliday {
+    public static class CalendarHoliday {
         public int year;
         public String country;
         public List<LocalDate> listDays = new ArrayList<>();

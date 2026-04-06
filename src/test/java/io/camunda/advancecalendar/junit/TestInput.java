@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -30,7 +29,7 @@ public class TestInput {
 
         // populate your input
         calendarInput.calendarAdvanceFunction = HourFunction.ADVANCE_HOURS;
-        calendarInput.startDate = "2026-05-13T15:18";
+        calendarInput.startDate = "2026-05-13T15:18:00";
         calendarInput.direction = CalendarAdvanceInput.DIRECTION_V_FORWARD;
         calendarInput.duration = "PT20H";
         calendarInput.useHolidays = true;

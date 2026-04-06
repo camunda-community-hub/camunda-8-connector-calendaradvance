@@ -4,7 +4,6 @@ import io.camunda.connector.api.error.ConnectorException;
 import io.camunda.connector.api.outbound.OutboundConnectorContext;
 import io.camunda.connector.calendaradvance.CalendarAdvanceInput;
 import io.camunda.connector.calendaradvance.CalendarAdvanceOutput;
-import io.camunda.connector.calendaradvance.advanceday.DayFunction;
 import io.camunda.connector.calendaradvance.timemachine.SlotContainer;
 import io.camunda.connector.calendaradvance.toolbox.CalendarAdvanceError;
 import io.camunda.connector.calendaradvance.toolbox.SubFunction;
@@ -25,7 +24,7 @@ public class HourFunction implements SubFunction {
 
 
     public static final String ADVANCE_HOURS = "advance-hours";
-    private final Logger logger = LoggerFactory.getLogger(DayFunction.class.getName());
+    private final Logger logger = LoggerFactory.getLogger(HourFunction.class.getName());
 
 
     /**
@@ -36,7 +35,6 @@ public class HourFunction implements SubFunction {
      */
     @Override
     public CalendarAdvanceOutput executeSubFunction(CalendarAdvanceInput calendarInput, OutboundConnectorContext outboundConnectorContext) throws ConnectorException {
-
         logger.debug("HourFunction Start");
         try {
 
@@ -46,7 +44,7 @@ public class HourFunction implements SubFunction {
             // Validate input
             ValidateInput.validateInput(calendarInput, true);
 
-            // add all pages from sources
+            // Now start the calculation
             CalendarAdvanceOutput calendarOutput = new CalendarAdvanceOutput();
 
             SlotContainer slotContainer = new SlotContainer();
@@ -65,7 +63,7 @@ public class HourFunction implements SubFunction {
             for (int i = 0; i < 1000; i++) {
                 // Calculate the next period according the current date. The Period is adapted to the cursor
                 SlotContainer.AdvanceResult advanceResult = slotContainer.getNextPeriod(cursor,
-                        calendarInput.getAdvance(),
+                        calendarInput.isDirectionForward(),
                         calendarInput.isUseHolidays(),
                         calendarInput.getHolidaysCountries());
 
@@ -78,7 +76,7 @@ public class HourFunction implements SubFunction {
                 if (advanceResult.period.getMinutes() >= durationInMinutes) {
                     // This is the end!
                     SlotContainer.Period lastPeriod;
-                    if (calendarInput.getAdvance()) {
+                    if (calendarInput.isDirectionForward()) {
                         cursor = LocalDateTime.of(advanceResult.periodDate, advanceResult.period.startTime)
                                 .plusMinutes(durationInMinutes);
                         lastPeriod = SlotContainer.Period.getPeriod(advanceResult.period.dayOfWeek,
@@ -115,16 +113,16 @@ public class HourFunction implements SubFunction {
             calendarOutput.foundDate = true;
             calendarOutput.resultDate = cursor;
             if (calendarInput.getCalculatedStartDateZoneOffset() != null &&
-                    (calendarInput.getBusinessZoneId() != null || slotContainer.is247Calendar()) ) {
+                    (calendarInput.getBusinessZoneId() != null || slotContainer.is247Calendar())) {
                 // resultDate is on the Business Calendar TimeZone, then we apply the offset reverse
-                ZonedDateTime zdt=null;
-                if (calendarInput.getBusinessZoneId()!=null) {
+                ZonedDateTime zdt = null;
+                if (calendarInput.getBusinessZoneId() != null) {
                     zdt = cursor.atZone(calendarInput.getBusinessZoneId());
-                } else if (calendarInput.getCalculatedStartDateZoneOffset()!=null) {
-                    zdt=cursor.atZone(calendarInput.getCalculatedStartDateZoneOffset());
+                } else if (calendarInput.getCalculatedStartDateZoneOffset() != null) {
+                    zdt = cursor.atZone(calendarInput.getCalculatedStartDateZoneOffset());
                 }
 
-                calendarOutput.resultZonedDate = zdt ==null? null: zdt.toInstant().atOffset( calendarInput.getCalculatedStartDateZoneOffset()).toZonedDateTime();
+                calendarOutput.resultZonedDate = zdt == null ? null : zdt.toInstant().atOffset(calendarInput.getCalculatedStartDateZoneOffset()).toZonedDateTime();
             }
             return calendarOutput;
 
@@ -169,7 +167,10 @@ public class HourFunction implements SubFunction {
 
     @Override
     public List<RunnerParameter> getOutputsParameter() {
-        return List.of(CalendarAdvanceOutput.parameterFoundDate, CalendarAdvanceOutput.parameterResultDate, CalendarAdvanceOutput.parameterListPeriod);
+        return List.of(CalendarAdvanceOutput.parameterFoundDate,
+                CalendarAdvanceOutput.parameterResultDate,
+                CalendarAdvanceOutput.parameterResultZonedDate,
+                CalendarAdvanceOutput.parameterListPeriods);
     }
 
     @Override

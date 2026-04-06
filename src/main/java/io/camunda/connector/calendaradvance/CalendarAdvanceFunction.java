@@ -25,7 +25,9 @@ import java.util.stream.Collectors;
         CalendarAdvanceInput.BUSINESS_CALENDAR,
         CalendarAdvanceInput.BUSINESS_TIMEZONE,
         CalendarAdvanceInput.USE_HOLIDAYS,
-        CalendarAdvanceInput.HOLIDAYS_COUNTRIES
+        CalendarAdvanceInput.HOLIDAYS_COUNTRIES,
+        CalendarAdvanceInput.DAY_PROGRESSION,
+        CalendarAdvanceInput.TARGET_PROGRESSION
 
 }, type = "c-calendaradvance-function")
 public class CalendarAdvanceFunction implements OutboundConnectorFunction, CherryConnector {
@@ -38,7 +40,7 @@ public class CalendarAdvanceFunction implements OutboundConnectorFunction, Cherr
     private final Logger logger = LoggerFactory.getLogger(CalendarAdvanceFunction.class.getName());
 
     @Override
-    public CalendarAdvanceOutput execute(OutboundConnectorContext outboundConnectorContext) throws Exception {
+    public CalendarAdvanceOutput execute(OutboundConnectorContext outboundConnectorContext) throws ConnectorException {
         CalendarAdvanceInput calendarAdvanceInput;
         try {
             calendarAdvanceInput = outboundConnectorContext.bindVariables(CalendarAdvanceInput.class);

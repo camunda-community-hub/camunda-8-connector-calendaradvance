@@ -332,7 +332,29 @@ ZonedDateTime (Denver) : 8:30
 
 ## Advance day
 
+
+Start date:  2026-03-31
+Duration: P1D
+Business calendar
+
+| Day                  | Use                 | Relicat       |
+|----------------------|---------------------|---------------|
+| MONDAY (2026-03-30)  | 17:20-18:00 (40 mn) | 130 - 40 = 90 |
+
 ## Reverse day
 
+
 ## Advance day with holiday
+
+## Advance 5 Days with specific businesss calendar
+
+
+One day is close, 
+one day is open with specific time schedule
+
+## advance 1 week
+
+## advance 2 weeks, with holiday 
+
+Starting Friday 19, 2026, advance two weeks in the US come to Friday, July 4. So the calendar advance to Monday July 6
 

@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.*;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.List;
@@ -41,7 +40,14 @@ public class CalendarAdvanceInput implements CherryInput {
 
 
     public static final String DURATION = "duration";
+    public static final String DAY_PROGRESSION = "dayProgression";
+    public static final String DAY_PROGRESSION_V_BUSINESSDAY = "businessday";
+    public static final String DAY_PROGRESSION_V_CALENDARDAY = "calendarday";
 
+    public static final String TARGET_PROGRESSION = "targetProgression";
+    public static final String TARGET_PROGRESSION_RESULT = "result";
+    public static final String TARGET_PROGRESSION_AFTER = "after";
+    public static final String TARGET_PROGRESSION_BEFORE = "before";
 
     public static final RunnerParameter parameterStartDay = new RunnerParameter(
             CalendarAdvanceInput.START_DATE, // name
@@ -80,7 +86,8 @@ public class CalendarAdvanceInput implements CherryInput {
             "Business TimeZone", // label
             String.class, // class
             RunnerParameter.Level.OPTIONAL, // level
-            "The business Calendar can be attached to a timezone. Region Based and Fixed UTC offsets accepted. Visit https://en.wikipedia.org/wiki/List_of_tz_database_time_zones");
+            "The business Calendar can be attached to a timezone. Region Based and Fixed UTC offsets accepted. Visit https://en.wikipedia.org/wiki/List_of_tz_database_time_zones")
+            .setVisibleInTemplate();
 
     public static final RunnerParameter parameterUseHolidays = new RunnerParameter(
             CalendarAdvanceInput.USE_HOLIDAYS, // name
@@ -97,6 +104,26 @@ public class CalendarAdvanceInput implements CherryInput {
             "List of countries (\"FR\", \"US\"). List of available countrycodes <a href=\\\"https://date.nager.at/Country\\\" target=\\\"_blank\\\">here</a> ")
             .addCondition(CalendarAdvanceInput.USE_HOLIDAYS, List.of("true"));
 
+    public static final RunnerParameter parameterDayProgression = new RunnerParameter(
+            CalendarAdvanceInput.DAY_PROGRESSION, // name
+            "Days progression", // label
+            String.class, // class
+            RunnerParameter.Level.REQUIRED, // level
+            "Method to advance one day: business day (only open day in business calendar are used) or calendar day")
+            .addChoice(CalendarAdvanceInput.DAY_PROGRESSION_V_BUSINESSDAY, "Business day")
+            .addChoice(CalendarAdvanceInput.DAY_PROGRESSION_V_CALENDARDAY, "Calendar day");
+
+    public static final RunnerParameter parameterTargetProgression = new RunnerParameter(
+            CalendarAdvanceInput.TARGET_PROGRESSION, // name
+            "Target progression", // label
+            String.class, // class
+            RunnerParameter.Level.REQUIRED, // level
+            "The target day policy: Result (even if the day is not a business day), After (advance until a open day is found - in reverse, move backward), Before (first business day before the target day).")
+            .addChoice(CalendarAdvanceInput.TARGET_PROGRESSION_RESULT, "Result day")
+            .addChoice(CalendarAdvanceInput.TARGET_PROGRESSION_AFTER, "After")
+            .addChoice(CalendarAdvanceInput.TARGET_PROGRESSION_BEFORE, "Before");
+
+
     private final Logger logger = LoggerFactory.getLogger(CalendarAdvanceInput.class.getName());
     public String calendarAdvanceFunction;
 
@@ -108,11 +135,12 @@ public class CalendarAdvanceInput implements CherryInput {
     public List<String> holidaysCountries;
 
     public String businessTimeZone;
+    public String dayProgression;
+    public String targetProgression;
     @JsonIgnoreProperties(ignoreUnknown = true)
     private LocalDateTime calculatedInputLocalDateTime;
     @JsonIgnoreProperties(ignoreUnknown = true)
     private ZoneOffset calculatedInputStartDateZoneOffset;
-
     private boolean zonedDateTime = false;
 
     public String getCalendarAdvanceFunction() {
@@ -123,28 +151,105 @@ public class CalendarAdvanceInput implements CherryInput {
         return businessCalendar;
     }
 
-    public boolean getAdvance() {
+    public boolean isDirectionForward() {
         return DIRECTION_V_FORWARD.equals(direction);
     }
 
-    public long getDurationInMinutes() throws ConnectorException {
-        try {
-            Duration durationObject = Duration.parse(duration);
-            return durationObject.toMinutes();
-        } catch (DateTimeParseException e) {
+    public TYPEPERIOD getTypePeriod() {
+        if (getDuration() != null) {
+            return TYPEPERIOD.TIME;
+        }
+        Period period = getPeriod();
+        if (period == null) {
             throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Duration[" + duration + "] is not ISO8601");
         }
+        if (period.getMonths() > 0)
+            return TYPEPERIOD.MONTH;
 
+        if (period.getYears() > 0)
+            return TYPEPERIOD.YEAR;
+        return TYPEPERIOD.DAY;
+    }
+
+    /**
+     * Get the duration in minutes
+     *
+     * @return the duration, exception if the duration can't be calculated
+     * @throws ConnectorException in case the duration can't be get
+     */
+    public long getDurationInMinutes() throws ConnectorException {
+        if (getDuration() == null)
+            throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Duration[" + duration + "] is not valid");
+        return getDuration().toMinutes();
+    }
+
+    public long getDurationInDays() throws ConnectorException {
+        Period period = getPeriod();
+        Duration duration = getDuration();
+        if (period == null && duration == null) {
+            throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Duration[" + duration + "] is not ISO8601");
+        }
+        if (duration != null)
+            return duration.toDays();
+        // So here, peiod !=null
+        if (period.getDays() == 0) {
+            throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Duration[" + duration + "] is not in days");
+        }
+        return period.getDays();
+    }
+
+    public long getDurationInMonths() throws ConnectorException {
+        Period period = getPeriod();
+        if (period == null) {
+            throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Duration[" + duration + "] is not ISO8601");
+        }
+        if (period.getMonths() == 0) {
+            throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Duration[" + duration + "] is not in Month");
+        }
+        return period.getMonths();
+    }
+
+    public long getDurationInYears() throws ConnectorException {
+        Period period = getPeriod();
+        if (period == null) {
+            throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Duration[" + duration + "] is not ISO8601");
+        }
+        if (period.getYears() == 0) {
+            throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Duration[" + duration + "] is not in year");
+        }
+        return period.getYears();
+    }
+
+    private Duration getDuration() {
+        try {
+            return Duration.parse(duration);
+        } catch (DateTimeParseException e) {
+            return null;
+        }
+    }
+
+    private Period getPeriod() {
+        try {
+            return Period.parse(duration);
+        } catch (DateTimeParseException e) {
+            return null;
+        }
     }
 
     public LocalDate getReferenceDateLocalDate() {
         if (startDate instanceof LocalDate referenceDateLocalDate) {
             return referenceDateLocalDate;
         } else {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-dd-MM");
-            return LocalDate.parse(startDate.toString(), formatter);
+            return calculatedInputLocalDateTime.toLocalDate();
         }
     }
+
+
+    /* ******************************************************************** */
+    /*                                                                      */
+    /*  Reference local                                                     */
+    /*                                                                      */
+    /* ******************************************************************** */
 
     public ZoneId getBusinessZoneId() {
         return (businessTimeZone != null && !businessTimeZone.isBlank())
@@ -158,6 +263,14 @@ public class CalendarAdvanceInput implements CherryInput {
 
     public ZoneOffset getCalculatedStartDateZoneOffset() {
         return calculatedInputStartDateZoneOffset;
+    }
+
+    public String getTargetProgression() {
+        return targetProgression;
+    }
+
+    public String getDayProgression() {
+        return dayProgression;
     }
 
     /**
@@ -196,19 +309,16 @@ public class CalendarAdvanceInput implements CherryInput {
         return ParameterToolbox.getInputParameters();
     }
 
-    /* ******************************************************************** */
-    /*                                                                      */
-    /*  calculate Reference Date                                            */
-    /*                                                                      */
-    /*  This class should be call at begining to calculated                 */
-    /* calculatedInputLocalDateTime and calculatedInputZoneoffset           */
-    /* ******************************************************************** */
-
     public void calculateReferenceDateLocalDateTime() {
         try {
+            calculatedInputStartDateZoneOffset = null;
             if (startDate == null) {
                 calculatedInputLocalDateTime = null;
-                calculatedInputStartDateZoneOffset = null;
+                return;
+            }
+
+            if (startDate instanceof LocalDate referenceDateLocalDate) {
+                calculatedInputLocalDateTime = referenceDateLocalDate.atStartOfDay();
                 return;
             }
 
@@ -245,9 +355,16 @@ public class CalendarAdvanceInput implements CherryInput {
 
 
             // no timezone in input → LocalDateTime
-            LocalDateTime ldt = LocalDateTime.parse(startDateString);
-            calculatedFromLocalDateTime(ldt);
+            try {
+                LocalDateTime ldt = LocalDateTime.parse(startDateString);
+                calculatedFromLocalDateTime(ldt);
+                return;
+            } catch (DateTimeParseException e) {
+                // do nothing
+            }
 
+            LocalDate date = LocalDate.parse(startDateString);
+            calculatedInputLocalDateTime = date.atStartOfDay();
 
         } catch (Exception e) {
             logger.error("Error getting reference date", e);
@@ -255,6 +372,14 @@ public class CalendarAdvanceInput implements CherryInput {
         }
 
     }
+
+    /* ******************************************************************** */
+    /*                                                                      */
+    /*  calculate Reference Date                                            */
+    /*                                                                      */
+    /*  This class should be call at begining to calculated                 */
+    /* calculatedInputLocalDateTime and calculatedInputZoneoffset           */
+    /* ******************************************************************** */
 
     private void calculatedFromLocalDateTime(LocalDateTime ldt) {
         ZoneId businessCalendarZoneId = getBusinessZoneId();
@@ -291,5 +416,12 @@ public class CalendarAdvanceInput implements CherryInput {
             zonedDateTime = true;
         }
     }
+
+    /* ******************************************************************** */
+    /*                                                                      */
+    /*  Period                                                              */
+    /*                                                                      */
+    /* ******************************************************************** */
+    public enum TYPEPERIOD {TIME, DAY, MONTH, YEAR}
 
 }

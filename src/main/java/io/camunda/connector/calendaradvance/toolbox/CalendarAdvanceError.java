@@ -33,4 +33,7 @@ public class CalendarAdvanceError {
     public static final String ERROR_BAD_PERIOD_EXPLANATION = "A period must follow the pattern <day>=<value>";
 
 
+    public static final String ERROR_MISSING_INPUT = "ERROR_MISSING_INPUT";
+    public static final String ERROR_MISSING_INPUT_EXPLANATION = "Missing input parameter";
+
 }
