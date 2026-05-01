@@ -25,12 +25,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class TestZonedCalendar {
+public class TestZonedTimeCalendar {
 
     private final Logger logger = LoggerFactory.getLogger(TestLocalTimeCalendar.class.getName());
 
     @Test
-    public void testNowPlus50() {
+    public void testNowPlus50Minutes() {
         CalendarAdvanceInput calendarInput = new CalendarAdvanceInput();
         OutboundConnectorContext context = mock(OutboundConnectorContext.class);
         // make bindVariables return your prepared input
@@ -68,7 +68,44 @@ public class TestZonedCalendar {
         }
     }
 
+    @Test
+    public void testNowPlus3Days() {
+        CalendarAdvanceInput calendarInput = new CalendarAdvanceInput();
+        OutboundConnectorContext context = mock(OutboundConnectorContext.class);
+        // make bindVariables return your prepared input
+        when(context.bindVariables(CalendarAdvanceInput.class)).thenReturn(calendarInput);
 
+        // populate your input
+        calendarInput.calendarAdvanceFunction = HourFunction.ADVANCE_HOURS;
+        ZonedDateTime now = ZonedDateTime.now(ZoneId.of("GMT")).truncatedTo(ChronoUnit.MINUTES);
+        calendarInput.startDate = now.format(DateTimeFormatter.ISO_ZONED_DATE_TIME);
+        calendarInput.direction = CalendarAdvanceInput.DIRECTION_V_FORWARD;
+        calendarInput.duration = "P3D";
+        calendarInput.useHolidays = false;
+        calendarInput.businessCalendar = SlotContainer.CALENDAR_24_7; // only way to calculate the result
+        CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
+        try {
+            CalendarAdvanceOutput output = calendarFunction.execute(context);
+
+            logger.info("nowPlus3dLocal: Result FoundDate:{} resultDate[{}] sourceZoneDate[{}] resultZonedDate[{}] Periods[{}]", output.foundDate, output.resultDate,
+                    calendarInput.startDate,
+                    output.resultZonedDate,
+                    output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+
+            assertTrue(output.foundDate);
+            // calculate now + 50 m
+            ZonedDateTime nowPlus3days = now.plusDays(3);
+            LocalDateTime nowPlus3dLocal = nowPlus3days.toLocalDateTime();
+
+            assert(output.resultZonedDate.toInstant().toEpochMilli() == nowPlus3days.toInstant().toEpochMilli());
+            assert (output.resultDate.equals(nowPlus3dLocal));
+
+            logger.info("nowPlus3dLocal OK ");
+        } catch (Exception e) {
+            logger.error("nowPlus3dLocal", e);
+            assert false;
+        }
+    }
 
     @Test
     public void testNewYorkLosAngeles() {

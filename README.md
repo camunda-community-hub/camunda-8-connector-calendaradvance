@@ -4,9 +4,14 @@
 
 # camunda-8-connector-calendaradvance
 
-The connector calculate a new date from an existing one, and advance (or backward) by a delay. it takes into account:
+![TicketWithSLA.png](doc/TicketWithSLA.png)
+
+The connector calculate a new date from an existing one, and advance (or backward) by a delay. 
+
+It takes into account:
 * Business days
-* hollidays according country
+* Open time (for example, office is open 9:00 to 18:00)
+* Holidays according country
 
 The connector has to mode
 * days
@@ -28,13 +33,13 @@ The result is Wednesday, January 21
 As opposite, starting from Wednesday, January 21 and moving backward, result will be on Thursday, January 15, 2026
 
 # Hours
-The hour mechanism works as the same, except the delay is given in seconds, using ISO‑8601. Format is P(n)Y(n)M(n)DT(n)H(n)M(n)S)
+The hour mechanism works as the same, except the delay is given in minutes, using ISO‑8601. Format is P(n)Y(n)M(n)DT(n)H(n)M(n)S)
 
-For example, to advance for 1 day, 14 hours, 15 minutes and 10 seconds, the duration is `P1DT14H15M10S`.
+For example, to advance for 1 day, 14 hours, 15 minutes, the duration is `P1DT14H15M`.
 The reference is a date, in seconds. For example
 ```json
 {
-  "startDate": "2026-01-15T11:50:00Z"
+  "startDate": "2026-01-15T11:50:00"
 }
 ```
 
@@ -59,6 +64,8 @@ Via this definition:
 * Wednesday has two slots, but the afternoon end sooner
 * Saturday and Sunday are not defined, they are considered as close day
 * 14 july 2026 has a special definition, only the morning is open. It will override the default Tuesday definition.
+
+The calculation will apply the delay on this calendar.
 
 
 ## Timezone or no timezone?
@@ -99,7 +106,7 @@ duration = 1*24*60+14*60+15 = 2295 mn
 ``` 
 
 Starting on Tuesday at 11:50, the fist slot is `Thursday=08:00:00-17:00:00`. The available time is 17:00:00 - 11:50 = 5:10 mn. The total duration is 
-Calulation is
+Calculation is
 
 | Slot                            | duration       | Relicat                            |
 |---------------------------------|----------------|------------------------------------| 
@@ -119,12 +126,12 @@ resultDate will be on Friday, January 23 at 08:45 mn
 zonedDate is set if the input contains a TimeZone, and a business time zone is define,
 
 
-
-
-
 # Use case
 
-## Local date + holiday
+Different use case are exposed, to explain in detail how the connector works.
+
+
+## T1. Local date + holiday : 6h
 
 Start date:  2026-01-16 at 15:34:00
 Duration: PT6H = 360 mn
@@ -141,7 +148,7 @@ Use Holiday true / US
 
 Result: Tuesday 20, 12:34
 
-## Reverse date + Holiday
+## T2. Reverse date + Holiday : 12h10mn
 
 Start date:  2026-07-15T10:34:00
 Duration: PT12H10M = 730 mn
@@ -161,7 +168,7 @@ Result: Friday 10, 16:24
 
 
 
-## Local date - 2 slots per day
+## T3. Local date - 2 slots per day: 18H20mn
 
 
 Start date:  2026-03-26T11:50:00
@@ -194,7 +201,7 @@ Result: Tuesday 31, 10:30
 
 
 
-## Local date - 2 holiday in 2 different countries
+## T4. Local date - 2 holidays in 2 different countries: +60H50mn
 
 Start date:  2026-07-02T17:15:00
 Duration: PT60H50M = 3650 mn
@@ -222,7 +229,7 @@ Use Holiday true / US,FR
 Result: Wednesday 15, 15:05
 
 
-## Local Date over new year
+## T5. Local Date over new year: +15H15mn
 
 Start date:  2026-12-30T13:54
 Duration: PT15H15M = 915 mn
@@ -240,7 +247,39 @@ Use Holiday true / US
 
 Result Monday 4, 11:09
 
-## Local date 24/7 hours
+## T6. Local date with holiday and specific time +20h
+
+May 14 (ascension day) and May 15 special time, only morning
+
+Start date:  2026-05-13T15:18
+Duration: PT20H = 1200 mn
+Business calendar :
+```json
+[ "Monday=09:00:00-18:00:00",
+  "Tuesday=09:00:00-18:00:00",
+  "Wednesday=09:00:00-18:00:00",
+  "Thursday=09:00:00-18:00:00",
+  "Friday=09:00:00-18:00:00",
+  "Day_2026/05/14=09:00-11:40", // Ascension day : it's a holiday in France, but we are open
+  "Day_2026/05/15=09:00-11:50"]; // Day after Ascension"
+```
+
+
+Use Holiday true / FR
+
+
+| Day                    | Use                   | Relicat           |
+|------------------------|-----------------------|-------------------|
+| WEDNESDAY (2026-05-13) | 15:18-18:00 (162 mn)  | 1200 - 162 = 1038 |
+| THURSDAY (2026-05-14)  | 09:00-11:40 (160 mn)  | 1038 - 160 = 878  |
+| FRIDAY (2026-05-15)    | 09:00-11:50 (170 mn)  | 878 - 170 = 708   |
+| MONDAY (2026-05-18)    | 09:00-17:18 (540 mn)  | 708 - 540 = 168   |
+| TUESDAY (2026-05-19)   | 09:00-11:48 (168 mn)  |                   | 
+
+Result is 2026-05-19T11:48
+
+
+## T10. Now. 24/7 hours +10days
 
 
 Start date:  2026-09-11T13:54
@@ -265,42 +304,16 @@ Use Holiday true / US
 
 Result : 2026-09-21T13:54
 
-## Local date with holiday and specific time
-
-May 14 (ascension day) and May 15 special time, only morning
-
-Start date:  2026-05-13T15:18
-Duration: PT20H = 1200 mn
-Business calendar :
-Monday=09:00:00-18:00:00",
-Tuesday=09:00:00-18:00:00",
-Wednesday=09:00:00-18:00:00",
-Thursday=09:00:00-18:00:00",
-Friday=09:00:00-18:00:00",
-Day_2026/05/14=09:00-11:40", // Ascension day : it's a holiday in France, but we are open
-Day_2026/05/15=09:00-11:50"); // Day after Ascension
-
-Use Holiday true / FR
 
 
-| Day                    | Use                   | Relicat           |
-|------------------------|-----------------------|-------------------|
-| WEDNESDAY (2026-05-13) | 15:18-18:00 (162 mn)  | 1200 - 162 = 1038 |
-| THURSDAY (2026-05-14)  | 09:00-11:40 (160 mn)  | 1038 - 160 = 878  |
-| FRIDAY (2026-05-15)    | 09:00-11:50 (170 mn)  | 878 - 170 = 708   |
-| MONDAY (2026-05-18)    | 09:00-17:18 (540 mn)  | 708 - 540 = 168   |
-| TUESDAY (2026-05-19)   | 09:00-11:48 (168 mn)  |                   | 
+## T11. Zoned time NewYork->Los Angeles(businessDDay) +2H10mn
 
-Result is 2026-05-19T11:48
-
-## Zoned time after (business day in Los Angeles)
-
-09:15 EAST 
+2026-03-30T09:14:00-04:00[America/New_York] 
 Calendar 09:00-18:00 PACIFIC TIME
 
 Advance 2:10 hours = 130 mn
 
-09:15 America/New_York => 06:15 America/Los Angeles
+09:14 America/New_York => 06:15 America/Los Angeles
 
 | Day                  | Use                  | Relicat |
 |----------------------|----------------------|---------|
@@ -308,11 +321,13 @@ Advance 2:10 hours = 130 mn
 
 Result is 
 Local Time: 11:10
-ZonedDateTime (New_York) : 14:10 
+ZonedDateTime (New_York) : 2026-03-30T14:10:00-04:00 
 
-## Zoned time before (business day in New_York)
 
-15:20 DENVER
+## T12. Zoned time Denver->New York (businessday) +2H10mn
+
+2026-03-30T15:20:00-06:00[America/Denver] 
+
 Calendar 09:00-18:00 NEW YORK TIME
 
 Advance 2:10 hours = 130 mn
@@ -327,34 +342,99 @@ Advance 2:10 hours = 130 mn
 
 Result is
 Local Time: 10:30
-ZonedDateTime (Denver) : 8:30
+ZonedDateTime (Denver) :2026-03-31T08:30:00-06:00 
 
 
-## Advance day
+## T21. Advance CalendarDay noHolliday +3d
+
+Start date:  2026-07-10 (Friday)
+Duration: P3D
+No Business calendar
+Use holidays
+
+| Day                   | Relicat |
+|-----------------------|---------|
+| SATURDAY (2026-07-11) | 3-1=2d  |
+| SUNDAY (2026-07-12)   | 2-1=1d  |
+| MONDAY (2026-07-13)   | 1-1=0d  |
+
+Result: 2026-07-13T00:00:00
 
 
-Start date:  2026-03-31
-Duration: P1D
-Business calendar
+## T22. Reverse CalendarDay we+noHoliday -4d
 
-| Day                  | Use                 | Relicat       |
-|----------------------|---------------------|---------------|
-| MONDAY (2026-03-30)  | 17:20-18:00 (40 mn) | 130 - 40 = 90 |
+Start date:  2026-07-15 (Wednesday)
+Duration: P4D
+No Business calendar
+Use holidays
 
-## Reverse day
+| Day                     | Relicat |
+|-------------------------|---------|
+| THURSDAY 14 (close)     |         |
+| MONDAY (2026-07-13)     | 4-1=3d  |
+| SUNDAY 12 (close)       |         |
+| SATURDAY 11 (close)     |         |
+| FRIDAY (2026-07-10)     | 3-1=2d  |
+| THURSDAY (2026-07-09)   | 2-1=1d  |
+| WEDNESDAY (2026-07-08)  | 1-1=0d  |
+
+Result: 2026-07-08T00:00:00
 
 
-## Advance day with holiday
+## T23. Advance 10 Days with specific business calendar
 
-## Advance 5 Days with specific businesss calendar
+Start: 2025-07-02
+Duration: P10D
 
+July 3 is close (substitute july 4)
 
 One day is close, 
 one day is open with specific time schedule
 
-## advance 1 week
+```json
 
-## advance 2 weeks, with holiday 
+[ "Monday=09:00:00-18:00:00",
+"Tuesday=09:00:00-18:00:00",
+"Wednesday=09:00:00-18:00:00",
+"Thursday=09:00:00-18:00:00",
+"Friday=09:00:00-18:00:00",
+"Day_2026/07/14=09:00-11:40", // July 14 day : it's a holiday in France, but we are open
+"Day_2026/05/15=09:00-11:50"];
+```
 
-Starting Friday 19, 2026, advance two weeks in the US come to Friday, July 4. So the calendar advance to Monday July 6
 
+| Day                       | Relicat |
+|---------------------------|---------|
+| THRUSDAY 03               | 10-1=9  |
+| FRIDAY 04 (close)         |         |
+| SATURDAY 05 (close)       |         |
+| SUNDAY 06 (close)         |         |
+| MONDAY 2026-07-07         | 9-1=8   |
+| TUESDAY 2026-07-08        | 8-1=7   |
+| WEDNESDAY 2026-07-09      | 7-1=6   |
+| THRUSDAY 2026-07-10       | 6-1=5   |
+| FRIDAY 2026-07-11         | 5-1=4   |
+| SATURDAY 12 (close)       |         |
+| SUNDAY 13 (close)         |         |
+| MONDAY 14 (open-specific) | 4-1=3   |
+| TUESDAY 2026-07-15        | 3-1=2   |
+| WEDNESDAY 2026-07-16      | 2-1=1   |
+| THRUSDAY 2026-07-17       | 1-1=0  |
+
+Result: 2026-07-17T00:00:00
+
+
+# T24. Business Day +4M
+
+Start date:  2026-07-14
+Duration: P4M
+Advance days
+Target progression: before
+
+| Day                         | Relicat |
+|-----------------------------|---------|
+| SATURDAY 2026-11-14 (close) | 4m-4m=0 |
+| FRIDAY 2026-11-13           |         |
+
+
+Result: 2026-07-13T00:00:00

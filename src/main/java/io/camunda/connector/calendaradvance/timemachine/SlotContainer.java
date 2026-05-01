@@ -3,6 +3,8 @@ package io.camunda.connector.calendaradvance.timemachine;
 
 import io.camunda.connector.api.error.ConnectorException;
 import io.camunda.connector.calendaradvance.toolbox.CalendarAdvanceError;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -12,8 +14,6 @@ import java.util.*;
  * This class contains slot contains given at the configuration
  */
 public class SlotContainer {
-
-
     public static final String SLOT_24_7 = "24/7";
     public static final List<String> CALENDAR_24_7 = List.of(SLOT_24_7);
     /**
@@ -30,6 +30,7 @@ public class SlotContainer {
             "Wednesday=09:00:00-18:00:00",
             "Thursday=09:00:00-18:00:00",
             "Friday=09:00:00-18:00:00");
+    private final Logger logger = LoggerFactory.getLogger(SlotContainer.class.getName());
     private final List<Period> specificPeriods = new ArrayList<>();
     public boolean is247Calendar = false;
     private Map<DayOfWeek, List<Period>> daysPeriods = new HashMap<>();
@@ -82,7 +83,8 @@ public class SlotContainer {
         for (String slot : listSlots) {
             String[] parts = slot.split("=");
             if (parts.length < 2) {
-                throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_PERIOD, "A period must follow <day>=<value>. Period [{}] don't follow this pattern");
+                logger.error("A period must follow <day>=<value>. Period [{}] don't follow this pattern", slot);
+                throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_PERIOD, "A period must follow <day>=<value>. Period [{}] don't follow this pattern :[" + slot + "]");
             }
             String day = parts[0];
             String[] periods = parts[1].split(",");
@@ -90,7 +92,8 @@ public class SlotContainer {
             for (String onePeriod : periods) {
                 String[] slice = onePeriod.split("-");
                 if (slice.length != 2) {
-                    throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_PERIOD, "A period must follow <day>=<period>[,*] . <period> is <localtime>-<localtime> like 09:00-12:30. Period does not contains a - ");
+                    logger.error("A period must follow <day>=<period>[,*] . <period> is <localtime>-<localtime> like 09:00-12:30. Period does not contains a - [{}]", onePeriod);
+                    throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_PERIOD, "A period must follow <day>=<period>[,*] . <period> is <localtime>-<localtime> like 09:00-12:30. Period does not contains a - : [" + onePeriod + "]");
 
                 }
                 Period period = new Period();
@@ -102,7 +105,7 @@ public class SlotContainer {
                 } else {
                     period.dayOfWeek = DayOfWeek.valueOf(day.toUpperCase());
                     daysPeriods
-                            .computeIfAbsent(period.dayOfWeek, k -> new ArrayList<>())
+                            .computeIfAbsent(period.dayOfWeek, _ -> new ArrayList<>())
                             .add(period);
                 }
             }
@@ -200,7 +203,8 @@ public class SlotContainer {
         try {
             return LocalTime.parse(text.trim());
         } catch (DateTimeException e) {
-            throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_PERIOD, "Can't parse LocalTime with text[" + text + ") in slot [" + slot + "]");
+            logger.error("Can't parse LocalTime with text[{}] in slot [{}]", text, slot);
+            throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_PERIOD, "Can't parse LocalTime with text[" + text + "] in slot [" + slot + "]");
         }
     }
 
@@ -208,7 +212,8 @@ public class SlotContainer {
         try {
             return LocalDate.parse(text.trim(), formatterSpecificDay);
         } catch (DateTimeException e) {
-            throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_PERIOD, "Can't parse LocalDate with text[" + text + ") in slot [" + slot + "]");
+            logger.error("Can't parse LocalDate with text[{}] in slot [{}]", text, slot);
+            throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_PERIOD, "Can't parse LocalDate with text[" + text + "] in slot [" + slot + "]");
         }
     }
 

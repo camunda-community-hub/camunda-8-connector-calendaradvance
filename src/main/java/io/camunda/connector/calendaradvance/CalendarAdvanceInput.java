@@ -54,7 +54,7 @@ public class CalendarAdvanceInput implements CherryInput {
             "Start Date", // label
             Date.class, // class
             RunnerParameter.Level.REQUIRED, // level
-            "Calculation sart with this date");
+            "Start from this day");
 
     public static final RunnerParameter parameterDuration = new RunnerParameter(
             CalendarAdvanceInput.DURATION,
@@ -62,7 +62,7 @@ public class CalendarAdvanceInput implements CherryInput {
             "Duration", // label
             String.class, // class
             RunnerParameter.Level.REQUIRED, // level
-            "Duration ISO 8601 : P2DT5H23M54S");
+            "Duration ISO 8601 : P2DT5H23M54S. When a Month or Year is given with CalendarDay, then it step by this duration");
 
     public static final RunnerParameter parameterDirection = new RunnerParameter(
             CalendarAdvanceInput.DIRECTION,
@@ -73,6 +73,7 @@ public class CalendarAdvanceInput implements CherryInput {
             "Direction to advance")
             .addChoice(DIRECTION_V_FORWARD, "forward")
             .addChoice(DIRECTION_V_BACKWARD, "backward");
+
 
     public static final RunnerParameter parameterBusinessCalendar = new RunnerParameter(
             CalendarAdvanceInput.BUSINESS_CALENDAR, // name
@@ -127,6 +128,8 @@ public class CalendarAdvanceInput implements CherryInput {
     private final Logger logger = LoggerFactory.getLogger(CalendarAdvanceInput.class.getName());
     public String calendarAdvanceFunction;
 
+    public boolean useBusinessDays;
+
     public List<String> businessCalendar;
     public String duration;
     public String direction;
@@ -155,11 +158,17 @@ public class CalendarAdvanceInput implements CherryInput {
         return DIRECTION_V_FORWARD.equals(direction);
     }
 
+    /**
+     * TypePeriod is not a parameter, but it's calculated from the duration.
+     *
+     * @return the type of period detected
+     */
     public TYPEPERIOD getTypePeriod() {
-        if (getDuration() != null) {
+        if (getPrivateDuration() != null) {
             return TYPEPERIOD.TIME;
         }
-        Period period = getPeriod();
+        // We already try to get the duration, so now just interesting of Period
+        Period period = getPrivatePeriod(true);
         if (period == null) {
             throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Duration[" + duration + "] is not ISO8601");
         }
@@ -178,14 +187,15 @@ public class CalendarAdvanceInput implements CherryInput {
      * @throws ConnectorException in case the duration can't be get
      */
     public long getDurationInMinutes() throws ConnectorException {
-        if (getDuration() == null)
+        if (getPrivateDuration() == null)
             throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Duration[" + duration + "] is not valid");
-        return getDuration().toMinutes();
+        return getPrivateDuration().toMinutes();
     }
 
     public long getDurationInDays() throws ConnectorException {
-        Period period = getPeriod();
-        Duration duration = getDuration();
+        // if this is a duration, we will manage it first. So we can get the period just based on days
+        Period period = getPrivatePeriod(true);
+        Duration duration = getPrivateDuration();
         if (period == null && duration == null) {
             throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Duration[" + duration + "] is not ISO8601");
         }
@@ -193,13 +203,24 @@ public class CalendarAdvanceInput implements CherryInput {
             return duration.toDays();
         // So here, peiod !=null
         if (period.getDays() == 0) {
+            logger.error("Bad duration. Period[" + period + "] return 0 days");
             throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Duration[" + duration + "] is not in days");
         }
         return period.getDays();
     }
 
+    public Period getPeriod() throws ConnectorException {
+        Period period = getPrivatePeriod(true);
+        if (period == null) {
+            logger.error("Bad period. Duration[" + duration + "] is not ISO8601");
+            throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Duration[" + duration + "] is not ISO8601");
+        }
+        return period;
+    }
+
+
     public long getDurationInMonths() throws ConnectorException {
-        Period period = getPeriod();
+        Period period = getPrivatePeriod(true);
         if (period == null) {
             throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Duration[" + duration + "] is not ISO8601");
         }
@@ -210,7 +231,7 @@ public class CalendarAdvanceInput implements CherryInput {
     }
 
     public long getDurationInYears() throws ConnectorException {
-        Period period = getPeriod();
+        Period period = getPrivatePeriod(true);
         if (period == null) {
             throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Duration[" + duration + "] is not ISO8601");
         }
@@ -220,7 +241,7 @@ public class CalendarAdvanceInput implements CherryInput {
         return period.getYears();
     }
 
-    private Duration getDuration() {
+    private Duration getPrivateDuration() {
         try {
             return Duration.parse(duration);
         } catch (DateTimeParseException e) {
@@ -228,9 +249,13 @@ public class CalendarAdvanceInput implements CherryInput {
         }
     }
 
-    private Period getPeriod() {
+    private Period getPrivatePeriod(boolean justDays) {
         try {
-            return Period.parse(duration);
+            String[] parts = duration.split("T");
+            if (justDays)
+                return Period.parse(parts[0]);
+            else
+                return Period.parse(duration);
         } catch (DateTimeParseException e) {
             return null;
         }
@@ -294,6 +319,10 @@ public class CalendarAdvanceInput implements CherryInput {
 
     public Object getStartDate() {
         return startDate;
+    }
+
+    public boolean isUseBusinessDays() {
+        return useBusinessDays;
     }
 
     public boolean isUseHolidays() {

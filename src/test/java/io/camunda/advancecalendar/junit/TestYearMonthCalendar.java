@@ -5,6 +5,7 @@ import io.camunda.connector.calendaradvance.CalendarAdvanceFunction;
 import io.camunda.connector.calendaradvance.CalendarAdvanceInput;
 import io.camunda.connector.calendaradvance.CalendarAdvanceOutput;
 import io.camunda.connector.calendaradvance.advanceday.DayFunction;
+import io.camunda.connector.calendaradvance.timemachine.SlotContainer;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,6 +89,75 @@ public class TestYearMonthCalendar {
             logger.info("backwardYearCalendarDay OK ");
         } catch (Exception e) {
             logger.error("backwardYearCalendarDay", e);
+            assert false;
+        }
+    }
+
+    @Test
+    public void forwardMonthAndDaysCalendarDay() {
+        CalendarAdvanceInput calendarInput = new CalendarAdvanceInput();
+        OutboundConnectorContext context = mock(OutboundConnectorContext.class);
+        // make bindVariables return your prepared input
+        when(context.bindVariables(CalendarAdvanceInput.class)).thenReturn(calendarInput);
+
+        // populate your input
+        calendarInput.calendarAdvanceFunction = DayFunction.ADVANCE_DAYS;
+        calendarInput.startDate = "2026-06-14";
+        calendarInput.direction = CalendarAdvanceInput.DIRECTION_V_FORWARD;
+        calendarInput.dayProgression = CalendarAdvanceInput.DAY_PROGRESSION_V_CALENDARDAY;
+        calendarInput.targetProgression = CalendarAdvanceInput.TARGET_PROGRESSION_BEFORE;
+        calendarInput.duration = "P1M12DT10H30M"; // 14 june=>14 july + 12 J=> Sunday 26 july => Friday 24
+        calendarInput.useHolidays = true;
+        calendarInput.holidaysCountries = List.of("FR");
+        calendarInput.businessCalendar = null;
+        CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
+        try {
+            CalendarAdvanceOutput output = calendarFunction.execute(context);
+            logger.info("forwardMonthAndDaysCalendarDay Result FoundDate:{} resultDate[{}] resultZonedDate[{}] periods[{}]",
+                    output.foundDate,
+                    output.resultDate.toLocalDate(),
+                    output.resultZonedDate,
+                    output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+            assertTrue(output.foundDate);
+            assert (output.resultDate.toLocalDate().equals(LocalDate.of(2026, 7, 24)));
+            assertNull(output.resultZonedDate);
+            logger.info("forwardMonthAndDaysCalendarDay OK ");
+        } catch (Exception e) {
+            logger.error("forwardMonthAndDaysCalendarDay", e);
+            assert false;
+        }
+    }
+
+    @Test
+    public void forwardBissextileAndDaysCalendarDay() {
+        CalendarAdvanceInput calendarInput = new CalendarAdvanceInput();
+        OutboundConnectorContext context = mock(OutboundConnectorContext.class);
+        // make bindVariables return your prepared input
+        when(context.bindVariables(CalendarAdvanceInput.class)).thenReturn(calendarInput);
+
+        // populate your input
+        calendarInput.calendarAdvanceFunction = DayFunction.ADVANCE_DAYS;
+        calendarInput.startDate = "2024-02-29";
+        calendarInput.direction = CalendarAdvanceInput.DIRECTION_V_FORWARD;
+        calendarInput.dayProgression = CalendarAdvanceInput.DAY_PROGRESSION_V_CALENDARDAY;
+        calendarInput.targetProgression = CalendarAdvanceInput.TARGET_PROGRESSION_RESULT;
+        calendarInput.duration = "P1Y3D"; // 29 fev 2024=> 28 fev 2025+3d = 4 march
+        calendarInput.useHolidays = false;
+        calendarInput.businessCalendar = null;
+        CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
+        try {
+            CalendarAdvanceOutput output = calendarFunction.execute(context);
+            logger.info("forwardMonthAndDaysCalendarDay Result FoundDate:{} resultDate[{}] resultZonedDate[{}] periods[{}]",
+                    output.foundDate,
+                    output.resultDate.toLocalDate(),
+                    output.resultZonedDate,
+                    output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+            assertTrue(output.foundDate);
+            assert (output.resultDate.toLocalDate().equals(LocalDate.of(2025, 3, 3)));
+            assertNull(output.resultZonedDate);
+            logger.info("forwardMonthAndDaysCalendarDay OK ");
+        } catch (Exception e) {
+            logger.error("forwardMonthAndDaysCalendarDay", e);
             assert false;
         }
     }

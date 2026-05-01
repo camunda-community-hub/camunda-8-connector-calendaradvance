@@ -107,7 +107,7 @@ public class HourFunction implements SubFunction {
                 calendarOutput.listPeriods.add(advanceResult.period.cloneForRealPeriod(advanceResult.periodDate));
 
                 cursor = advanceResult.newDate;
-                logger.debug("AdvanceDayFunction Period [{}-{}]: {} mn : now {} for {} mn", advanceResult.period.startTime, advanceResult.period.endTime, advanceResult.period.getMinutes(), cursor, durationInMinutes);
+                logger.info("AdvanceDayFunction Period [{}-{}]: {} mn : now {} for {} mn", advanceResult.period.startTime, advanceResult.period.endTime, advanceResult.period.getMinutes(), cursor, durationInMinutes);
 
             }
             calendarOutput.foundDate = true;

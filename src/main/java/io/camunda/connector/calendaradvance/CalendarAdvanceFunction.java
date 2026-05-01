@@ -58,6 +58,7 @@ public class CalendarAdvanceFunction implements OutboundConnectorFunction, Cherr
                 return calendarAdvanceOutput;
             }
         }
+        logger.error("CalendarAdvanceFunction Unknow function [{}]", function);
         throw new ConnectorException(CalendarAdvanceError.ERROR_UNKNOWN_FUNCTION, "CalendarAdvance Unknown function " + function + "]");
 
     }
