@@ -1,0 +1,86 @@
+./# Kubernetes image
+
+# Deploy
+
+The connector can be used a simple pod
+
+```shell
+kubectl create -f c8-calendaradvance.yaml
+```
+
+# Connect to a different cluster
+
+The simple way to connect to a different cluster is to set variables in the pod, as an environment variables.
+To change the gatewayUrl, use in the YAML file
+ 
+
+```yaml
+          env:
+            - name: CAMUNDA_CLIENT_MODE
+              value: selfManaged
+            - name: CAMUNDA_CLIENT_GRPCADDRESS
+              value: http://camunda-zeebe-gateway:26500
+
+```
+
+The default configuration connect to a local self-manage cluster, assuming the connector is deployed in the same cluster.
+
+Visit
+https://docs.camunda.io/docs/8.7/apis-tools/spring-zeebe-sdk/configuration/#modes
+
+
+
+To deploy using a basic authentication, add
+
+```yaml
+          env:
+            - name: CAMUNDA_CLIENT_AUTH_METHOD
+              value: basic
+            - name: CAMUNDA_CLIENT_AUTH_USERNAME
+              value: <your user name>
+            - name: CAMUNDA_CLIENT_AUTH_PASSWORD
+              value: <your password name>
+```
+
+
+To access all parameters: https://docs.camunda.io/docs/apis-tools/camunda-spring-boot-starter/properties-reference/
+
+# Build the image
+
+## Rebuilt the image via
+
+```
+mvn clean install
+```
+
+## Check the connector runtime version 
+
+The version is referenced in `DockerFile`
+
+## Push the docker image
+
+The docker image is build using the Dockerfile present on the root level.
+
+Push the image to
+```
+docker build -t pierre-yves-monnet/c8-calendaradvance:1.0.0 .
+```
+
+## Push in Camunda hub
+
+Push the image to the Camunda hub (you must be login first to the docker registry)
+
+```
+docker tag pierre-yves-monnet/c8-calendaradvance:1.0.0 ghcr.io/camunda-community-hub/c8-calendaradvance:1.0.0
+docker push ghcr.io/camunda-community-hub/c8-calendaradvance:1.0.0
+```
+
+Tag as the latest:
+
+```
+docker tag pierre-yves-monnet/c8-calendaradvance:1.0.0 ghcr.io/camunda-community-hub/c8-calendaradvance:latest
+docker push ghcr.io/camunda-community-hub/c8-calendaradvance:latest
+```
+
+Check on https://github.com/camunda-community-hub/camunda-8-connector-pdf/pkgs/container/c8-calendaradvance
+

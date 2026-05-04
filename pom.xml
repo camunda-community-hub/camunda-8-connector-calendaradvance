@@ -34,7 +34,6 @@
         <maven.compiler.source>23</maven.compiler.source>
         <maven.compiler.target>23</maven.compiler.target>
         <maven.compiler.release>23</maven.compiler.release>
-
     </properties>
 
     <!-- Push the library to Maven -->
@@ -70,7 +69,6 @@
             <artifactId>element-template-generator-core</artifactId>
             <version>${version.connector}</version>
         </dependency>
-
 
 
         <dependency>
@@ -115,7 +113,7 @@
             <groupId>io.camunda.connector</groupId>
             <artifactId>spring-boot-starter-camunda-connectors</artifactId>
             <version>${version.connector}</version>
-<!--            <scope>test</scope> -->
+            <!--            <scope>test</scope> -->
         </dependency>
 
         <!-- to generate the element-template -->
@@ -143,18 +141,12 @@
     <build>
         <resources>
             <!-- Solve the project.version in the banner.txt -->
+            <!-- spring-boot-starter-parent : delimiter is @@ -->
             <resource>
                 <directory>src/main/resources</directory>
                 <filtering>true</filtering>
             </resource>
-            <resource>
-                <directory>src/main/resources</directory>
-                <includes>
-                    <include>banner.txt</include>
-                    <include>application.yaml</include>
-                </includes>
-                <filtering>true</filtering>
-            </resource>
+
         </resources>
 
         <plugins>
@@ -175,6 +167,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.2</version>
             </plugin>
+
         </plugins>
     </build>
 
