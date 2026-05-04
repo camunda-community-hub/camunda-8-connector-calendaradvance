@@ -6,12 +6,13 @@
 
 ![TicketWithSLA.png](doc/TicketWithSLA.png)
 
-This connector calculates a new date from an existing one, advancing or moving it backward by a given delay.
+This connector calculates a new date from an existing one, advancing or moving it backward by a given duration in hours or days.
 
 It takes into account:
 * Business days
-* Open hours (e.g. office hours 9:00–18:00)
+* Open hours (e.g. office hours 9:00–18:00 for advance in hours)
 * Public holidays by country
+* TimeZone. The open business hours is in the Los Angeles Timezone, and the requester in New York timezone: what is the exact time for an SLA of 50 hours?
 
 Two modes are available: **days** and **hours**.
 
@@ -295,7 +296,7 @@ Holidays: US
 | Sunday 3      | Closed                  |                  |
 | Monday 4      | 09:00 + 120 mn = 11:00  | 0                |
 
-**Result: Monday January 4, 11:00**
+**Result: Monday, January 5, 11:00**
 
 ## T6. Local date with holiday and specific times: +20h
 
@@ -466,6 +467,20 @@ Direction: advance · Target: before
 | Friday 2026-11-13             |              |
 
 **Result: 2026-11-13T00:00:00**
+
+
+# T25. Business days, month-based: +3M4D
+
+Start date: `2026-07-14`
+Duration: `P4M4DT10H`
+Direction: advance · Target: after
+
+| Day                        | Remaining        |
+|----------------------------|------------------|
+| Sunday 2026-11-18 (closed) | 3m4d − 3m4d = 0  |
+| Monday 2026-11-19          |                  |
+
+**Result: 2026-10-19T00:00:00**
 
 ---
 
