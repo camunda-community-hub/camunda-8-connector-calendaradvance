@@ -162,7 +162,7 @@
     </bpmn:serviceTask>
     <bpmn:scriptTask id="Activity_03843me" name="pilot tests">
       <bpmn:extensionElements>
-        <zeebe:script expression="=false" resultVariable="allTests" />
+        <zeebe:script expression="=true" resultVariable="allTests" />
         <zeebe:ioMapping>
           <zeebe:output source="=date and time(&#10;  date(now()),&#10;  time(time(now()).hour, time(now()).minute, 0)&#10;)" target="currentNow" />
           <zeebe:output source="=allTests" target="allTests" />
@@ -678,7 +678,7 @@
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_0f3sdjx" sourceRef="Activity_1ozeiu5" targetRef="Gateway_0fdvvn7" />
     <bpmn:sequenceFlow id="Flow_07ekxxs" sourceRef="Gateway_0jpjwp0" targetRef="Activity_17gpv12">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=true</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=allTests</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_0v9brg7" sourceRef="Activity_17gpv12" targetRef="Activity_0ybu94x" />
     <bpmn:sequenceFlow id="Flow_0e5xwy4" sourceRef="Activity_0ybu94x" targetRef="Gateway_02ep51j" />

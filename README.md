@@ -35,31 +35,42 @@ See [How to install this connector](#how-to-install-this-connector) for installa
 **Example:** Starting Thursday, January 15, 2026, advance by 3 business days in the USA.
 
 With a Monday–Friday business calendar:
-* Friday January 16 counts as day 1
+* Friday, January 16 counts as day 1
 * Saturday and Sunday are skipped
-* Monday January 19 is a holiday (Martin Luther King Jr. Day)
-* Tuesday January 20 counts as day 2
-* Wednesday January 21 counts as day 3
+* Monday, January 19 is a holiday (Martin Luther King Jr. Day)
+* Tuesday, January 20 counts as day 2
+* Wednesday, January 21 counts as day 3
 
 **Result: Wednesday, January 21**
 
-Moving backward from Wednesday January 21 by 3 business days returns to Thursday, January 15, 2026.
+Moving backward from Wednesday, January 21 by 3 business days returns to Thursday, January 15, 2026.
 
 ---
-
 # Months and years
 
-Advancing by months cannot be accurately converted into a fixed number of days. For example, moving one month forward from January 5 lands on February 5 (31 days), while one month from February 5 lands on March 5 (28 or 29 days).
+Parameter `CalendarAdvance function` equals `Advance days`.
 
-When a delay is expressed in months or years (e.g. `P1M`, `P2M13D`, `P1Y`), the connector automatically switches to a month-based calculation.
+## Business day
 
----
+In business day mode, the business calendar and holidays (optional) drive the progression. The duration must be expressed as an explicit number of days — durations in months or years are rejected, since "two months" cannot be converted to a deterministic number of business days.
+
+## Calendar day
+
+In calendar day mode, the connector advances by a fixed number of calendar days. For example, `P10D` from January 7 lands on January 17. Durations in months or years (e.g. `P1M`, `P1Y`) are supported.
+
+To ensure the result falls on an open day, use the `targetProgression` parameter. When set to `after` or `before`, the business calendar and holidays (optional) are used to find the next available open day in the specified direction.
+
+
+
+
 
 # Hours
 
+Parameter `CalendarAdvance function` equals `Advance hours`.
+
 The hours mode works the same way as days, except the delay is expressed in minutes using ISO 8601 duration format: `P(n)Y(n)M(n)DT(n)H(n)M(n)S`.
 
-For example, to advance by 1 day, 14 hours and 15 minutes, use `P1DT14H15M`.
+For example, to advance by 1 day, 14 hours and 15 minutes, use `Duration` equals `P1DT14H15M`.
 
 The start date must include a time component, for example:
 ```json
@@ -153,25 +164,30 @@ The connector always returns two values:
 
 Starting from Tuesday at 11:50, with duration `P1DT14H15M` = 2295 minutes:
 
-| Slot | Duration | Remaining |
-|---------------------------------|----------------|------------------------|
-| `Thursday=08:00:00-17:00:00` | 5:10 = 300 mn | 2295 − 300 = 1995 mn |
-| `Friday=08:00:00-12:00:00` | 4:00 = 240 mn | 1995 − 240 = 1755 mn |
-| `Friday=14:00:00-17:30:00` | 3:30 = 210 mn | 1755 − 210 = 1545 mn |
-| Saturday, Sunday — closed | | |
-| Monday January 19 — holiday | | |
-| `Tuesday=08:00:00-12:00:00` | 4:00 = 240 mn | 1545 − 240 = 1305 mn |
-| `Tuesday=14:00:00-18:00:00` | 4:00 = 240 mn | 1305 − 240 = 1065 mn |
-| `Wednesday=08:00:00-12:00:00` | 4:00 = 240 mn | 1065 − 240 = 825 mn |
-| `Wednesday=14:00:00-18:00:00` | 4:00 = 240 mn | 825 − 240 = 585 mn |
-| `Thursday=08:00:00-17:00:00` | 9:00 = 540 mn | 585 − 540 = 45 mn |
-| `Friday=08:00:00-12:00:00` | 45 mn after 08:00 → 08:45 | 0 |
+| Slot                          | Duration                  | Remaining             |
+|-------------------------------|---------------------------|-----------------------|
+| `Thursday=08:00:00-17:00:00`  | 5:10 = 300 mn             | 2295 − 300 = 1995 mn  |
+| `Friday=08:00:00-12:00:00`    | 4:00 = 240 mn             | 1995 − 240 = 1755 mn  |
+| `Friday=14:00:00-17:30:00`    | 3:30 = 210 mn             | 1755 − 210 = 1545 mn  |
+| Saturday, Sunday — closed     |                           |                       |
+| Monday January 19 — holiday   |                           |                       |
+| `Tuesday=08:00:00-12:00:00`   | 4:00 = 240 mn             | 1545 − 240 = 1305 mn  |
+| `Tuesday=14:00:00-18:00:00`   | 4:00 = 240 mn             | 1305 − 240 = 1065 mn  |
+| `Wednesday=08:00:00-12:00:00` | 4:00 = 240 mn             | 1065 − 240 = 825 mn   |
+| `Wednesday=14:00:00-18:00:00` | 4:00 = 240 mn             | 825 − 240 = 585 mn    |
+| `Thursday=08:00:00-17:00:00`  | 9:00 = 540 mn             | 585 − 540 = 45 mn     |
+| `Friday=08:00:00-12:00:00`    | 45 mn after 08:00 → 08:45 | 0                     |
 
 `resultDate` = Friday, January 23 at 08:45. `zonedDate` is set if the input contains a timezone and a business calendar timezone is defined.
 
 ---
 
 # Use cases
+
+Different uses case can be retrieved in the [AdvanceCalendar.bpmn](src/test/resources/AdvanceCalendar.bpmn) example.
+
+![AdvanceCalendar.png](doc/AdvanceCalendar.png)
+
 
 ## T1. Local date + holiday: +6h
 
@@ -180,15 +196,15 @@ Duration: `PT6H` = 360 mn
 Business calendar: default
 Holidays: US
 
-| Day | Use | Remaining |
-|---------------------|--------------------------------|--------------|
-| Friday 16 | 18:00 − 15:34 = 146 mn | 360 − 146 = 214 |
-| Saturday 17 | Closed | |
-| Sunday 18 | Closed | |
-| Monday 19 | Closed (Martin Luther King Jr.) | |
-| Tuesday 20 | 09:00 + 214 mn = 12:34 | 0 |
+| Day          | Use                             | Remaining       |
+|--------------|---------------------------------|-----------------|
+| Friday 16    | 18:00 − 15:34 = 146 mn          | 360 − 146 = 214 |
+| Saturday 17  | Closed                          |                 |
+| Sunday 18    | Closed                          |                 |
+| Monday 19    | Closed (Martin Luther King Jr.) |                 |
+| Tuesday 20   | 09:00 + 214 mn = 12:34          | 0               |
 
-**Result: Tuesday January 20, 12:34**
+**Result: Tuesday, January 20, 12:34**
 
 ## T2. Reverse date + holiday: −12h10mn
 
@@ -197,14 +213,14 @@ Duration: `PT12H10M` = 730 mn
 Business calendar: default
 Holidays: FR
 
-| Day | Use | Remaining |
-|---------------|---------------------------|-----------------|
-| Wednesday 15 | 10:34 − 09:00 = 94 mn | 730 − 94 = 636 |
-| Tuesday 14 | Closed (Bastille Day) | |
-| Monday 13 | 18:00 − 09:00 = 540 mn | 636 − 540 = 96 |
-| Sunday 12 | Closed | |
-| Saturday 11 | Closed | |
-| Friday 10 | 18:00 − 96 mn = 16:24 | 0 |
+| Day           | Use                    | Remaining       |
+|---------------|------------------------|-----------------|
+| Wednesday 15  | 10:34 − 09:00 = 94 mn  | 730 − 94 = 636  |
+| Tuesday 14    | Closed (Bastille Day)  |                 |
+| Monday 13     | 18:00 − 09:00 = 540 mn | 636 − 540 = 96  |
+| Sunday 12     | Closed                 |                 |
+| Saturday 11   | Closed                 |                 |
+| Friday 10     | 18:00 − 96 mn = 16:24  | 0               |
 
 **Result: Friday July 10, 16:24**
 
@@ -213,23 +229,27 @@ Holidays: FR
 Start date: `2026-03-26T11:50:00`
 Duration: `PT18H20M` = 1100 mn
 Business calendar:
-Monday=09:00:00-12:00:00,14:10:00-18:00:00
-Tuesday=09:00:00-12:00:00,14:10:00-18:00:00
-Wednesday=09:00:00-12:00:00,14:10:00-18:00:00
-Thursday=09:00:00-12:00:00,14:10:00-18:00:00
-Friday=09:00:00-12:00:00
+```json
+[
+  "Monday=09:00:00-12:00:00,14:10:00-18:00:00",
+  "Tuesday=09:00:00-12:00:00,14:10:00-18:00:00",
+  "Wednesday=09:00:00-12:00:00,14:10:00-18:00:00",
+  "Thursday=09:00:00-12:00:00,14:10:00-18:00:00",
+  "Friday=09:00:00-12:00:00"
+]
+```
 Holidays: US
 
-| Day | Use | Remaining |
-|-------------|--------------------------------------------------|----------------|
-| Thursday 26 | 11:50–12:00 + 14:10–18:00 = 10 + 230 mn | 1100 − 240 = 860 |
-| Friday 27 | 09:00–12:00 = 180 mn | 860 − 180 = 680 |
-| Saturday 28 | Closed | |
-| Sunday 29 | Closed | |
-| Monday 30 | 09:00–12:00 = 180 mn | 680 − 180 = 500 |
-| | 14:10–18:00 = 230 mn | 500 − 230 = 270 |
-| Tuesday 31 | 09:00–12:00 = 180 mn | 270 − 180 = 90 |
-| | 14:10 + 90 mn = 15:40 | 0 |
+| Day          | Use                                     | Remaining        |
+|--------------|-----------------------------------------|------------------|
+| Thursday 26  | 11:50–12:00 + 14:10–18:00 = 10 + 230 mn | 1100 − 240 = 860 |
+| Friday 27    | 09:00–12:00 = 180 mn                    | 860 − 180 = 680  |
+| Saturday 28  | Closed                                  |                  |
+| Sunday 29    | Closed                                  |                  |
+| Monday 30    | 09:00–12:00 = 180 mn                    | 680 − 180 = 500  |
+|              | 14:10–18:00 = 230 mn                    | 500 − 230 = 270  |
+| Tuesday 31   | 09:00–12:00 = 180 mn                    | 270 − 180 = 90   |
+|              | 14:10 + 90 mn = 15:40                   | 0                |
 
 **Result: Tuesday March 31, 15:40**
 
@@ -240,22 +260,22 @@ Duration: `PT60H50M` = 3650 mn
 Business calendar: default
 Holidays: US, FR
 
-| Day | Use | Remaining |
-|--------------|------------------------------|------------------|
-| Thursday 2 | 17:15–18:00 = 45 mn | 3650 − 45 = 3605 |
-| Friday 3 | Closed (Independence Day observed) | |
-| Saturday 4 | Closed | |
-| Sunday 5 | Closed | |
-| Monday 6 | 09:00–18:00 = 540 mn | 3605 − 540 = 3065 |
-| Tuesday 7 | 09:00–18:00 = 540 mn | 3065 − 540 = 2525 |
-| Wednesday 8 | 09:00–18:00 = 540 mn | 2525 − 540 = 1985 |
-| Thursday 9 | 09:00–18:00 = 540 mn | 1985 − 540 = 1445 |
-| Friday 10 | 09:00–18:00 = 540 mn | 1445 − 540 = 905 |
-| Saturday 11 | Closed | |
-| Sunday 12 | Closed | |
-| Monday 13 | 09:00–18:00 = 540 mn | 905 − 540 = 365 |
-| Tuesday 14 | Closed (Bastille Day) | |
-| Wednesday 15 | 09:00 + 365 mn = 15:05 | 0 |
+| Day          | Use                                | Remaining         |
+|--------------|------------------------------------|-------------------|
+| Thursday 2   | 17:15–18:00 = 45 mn                | 3650 − 45 = 3605  |
+| Friday 3     | Closed (Independence Day observed) |                   |
+| Saturday 4   | Closed                             |                   |
+| Sunday 5     | Closed                             |                   |
+| Monday 6     | 09:00–18:00 = 540 mn               | 3605 − 540 = 3065 |
+| Tuesday 7    | 09:00–18:00 = 540 mn               | 3065 − 540 = 2525 |
+| Wednesday 8  | 09:00–18:00 = 540 mn               | 2525 − 540 = 1985 |
+| Thursday 9   | 09:00–18:00 = 540 mn               | 1985 − 540 = 1445 |
+| Friday 10    | 09:00–18:00 = 540 mn               | 1445 − 540 = 905  |
+| Saturday 11  | Closed                             |                   |
+| Sunday 12    | Closed                             |                   |
+| Monday 13    | 09:00–18:00 = 540 mn               | 905 − 540 = 365   |
+| Tuesday 14   | Closed (Bastille Day)              |                   |
+| Wednesday 15 | 09:00 + 365 mn = 15:05             | 0                 |
 
 **Result: Wednesday July 15, 15:05**
 
@@ -266,14 +286,14 @@ Duration: `PT15H15M` = 915 mn
 Business calendar: default
 Holidays: US
 
-| Day | Use | Remaining |
-|---------------|------------------------|-----------------|
-| Wednesday 30 | 13:54–18:00 = 246 mn | 915 − 246 = 669 |
-| Thursday 31 | 09:00–18:00 = 540 mn | 669 − 540 = 129 |
-| Friday Jan 1 | Closed (New Year's Day) | |
-| Saturday 2 | Closed | |
-| Sunday 3 | Closed | |
-| Monday 4 | 09:00 + 120 mn = 11:00 | 0 |
+| Day           | Use                     | Remaining        |
+|---------------|-------------------------|------------------|
+| Wednesday 30  | 13:54–18:00 = 246 mn    | 915 − 246 = 669  |
+| Thursday 31   | 09:00–18:00 = 540 mn    | 669 − 540 = 129  |
+| Friday Jan 1  | Closed (New Year's Day) |                  |
+| Saturday 2    | Closed                  |                  |
+| Sunday 3      | Closed                  |                  |
+| Monday 4      | 09:00 + 120 mn = 11:00  | 0                |
 
 **Result: Monday January 4, 11:00**
 
@@ -297,13 +317,13 @@ Holidays: FR
 
 May 14 is Ascension Day (public holiday in France), but explicitly open via the calendar override. May 15 has a specific morning-only schedule.
 
-| Day | Use | Remaining |
-|------------------------|----------------------|-------------------|
-| Wednesday May 13 | 15:18–18:00 = 162 mn | 1200 − 162 = 1038 |
-| Thursday May 14 | 09:00–11:40 = 160 mn | 1038 − 160 = 878 |
-| Friday May 15 | 09:00–11:50 = 170 mn | 878 − 170 = 708 |
-| Monday May 18 | 09:00–18:00 = 540 mn | 708 − 540 = 168 |
-| Tuesday May 19 | 09:00 + 168 mn = 11:48 | 0 |
+| Day               | Use                    | Remaining          |
+|-------------------|------------------------|--------------------|
+| Wednesday May 13  | 15:18–18:00 = 162 mn   | 1200 − 162 = 1038  |
+| Thursday May 14   | 09:00–11:40 = 160 mn   | 1038 − 160 = 878   |
+| Friday May 15     | 09:00–11:50 = 170 mn   | 878 − 170 = 708    |
+| Monday May 18     | 09:00–18:00 = 540 mn   | 708 − 540 = 168    |
+| Tuesday May 19    | 09:00 + 168 mn = 11:48 | 0                  |
 
 **Result: Tuesday May 19, 11:48**
 
@@ -314,19 +334,19 @@ Duration: `P10D` = 14400 mn
 Business calendar: 24/7
 Holidays: US
 
-| Day | Use | Remaining |
-|--------------|------------------------|----------------------|
-| Friday 11 | 13:54–00:00 = 606 mn | 14400 − 606 = 13794 |
-| Saturday 12 | 00:00–00:00 = 1440 mn | 13794 − 1440 = 12354 |
-| Sunday 13 | 00:00–00:00 = 1440 mn | 12354 − 1440 = 10914 |
-| Monday 14 | 00:00–00:00 = 1440 mn | 10914 − 1440 = 9474 |
-| Tuesday 15 | 00:00–00:00 = 1440 mn | 9474 − 1440 = 8034 |
-| Wednesday 16 | 00:00–00:00 = 1440 mn | 8034 − 1440 = 6594 |
-| Thursday 17 | 00:00–00:00 = 1440 mn | 6594 − 1440 = 5154 |
-| Friday 18 | 00:00–00:00 = 1440 mn | 5154 − 1440 = 3714 |
-| Saturday 19 | 00:00–00:00 = 1440 mn | 3714 − 1440 = 2274 |
-| Sunday 20 | 00:00–00:00 = 1440 mn | 2274 − 1440 = 834 |
-| Monday 21 | 00:00 + 834 mn = 13:54 | 0 |
+| Day          | Use                    | Remaining             |
+|--------------|------------------------|-----------------------|
+| Friday 11    | 13:54–00:00 = 606 mn   | 14400 − 606 = 13794   |
+| Saturday 12  | 00:00–00:00 = 1440 mn  | 13794 − 1440 = 12354  |
+| Sunday 13    | 00:00–00:00 = 1440 mn  | 12354 − 1440 = 10914  |
+| Monday 14    | 00:00–00:00 = 1440 mn  | 10914 − 1440 = 9474   |
+| Tuesday 15   | 00:00–00:00 = 1440 mn  | 9474 − 1440 = 8034    |
+| Wednesday 16 | 00:00–00:00 = 1440 mn  | 8034 − 1440 = 6594    |
+| Thursday 17  | 00:00–00:00 = 1440 mn  | 6594 − 1440 = 5154    |
+| Friday 18    | 00:00–00:00 = 1440 mn  | 5154 − 1440 = 3714    |
+| Saturday 19  | 00:00–00:00 = 1440 mn  | 3714 − 1440 = 2274    |
+| Sunday 20    | 00:00–00:00 = 1440 mn  | 2274 − 1440 = 834     |
+| Monday 21    | 00:00 + 834 mn = 13:54 | 0                     |
 
 **Result: Monday September 21, 13:54**
 
@@ -338,9 +358,9 @@ Duration: 2h10 = 130 mn
 
 Convert: 09:14 New York → 06:14 Los Angeles
 
-| Day | Use | Remaining |
-|----------------------|----------------------|---------|
-| Monday 2026-03-30 | 09:00 + 130 mn = 11:10 | 0 |
+| Day                | Use                     | Remaining |
+|--------------------|-------------------------|-----------|
+| Monday 2026-03-30  | 09:00 + 130 mn = 11:10  | 0         |
 
 **Result:**
 * `resultDate` (Local): `11:10`
@@ -354,10 +374,10 @@ Duration: 2h10 = 130 mn
 
 Convert: 15:20 Denver → 17:20 New York
 
-| Day | Use | Remaining |
-|----------------------|---------------------|---------------|
-| Monday 2026-03-30 | 17:20–18:00 = 40 mn | 130 − 40 = 90 |
-| Tuesday 2026-03-31 | 09:00 + 90 mn = 10:30 | 0 |
+| Day                | Use                   | Remaining      |
+|--------------------|-----------------------|----------------|
+| Monday 2026-03-30  | 17:20–18:00 = 40 mn   | 130 − 40 = 90  |
+| Tuesday 2026-03-31 | 09:00 + 90 mn = 10:30 | 0              |
 
 **Result:**
 * `resultDate` (Local): `10:30`
@@ -369,11 +389,11 @@ Start date: `2026-07-10` (Friday)
 Duration: `P3D`
 No business calendar · Holidays enabled
 
-| Day | Remaining |
-|-----------------------|---------|
-| Saturday 2026-07-11 | 3 − 1 = 2d |
-| Sunday 2026-07-12 | 2 − 1 = 1d |
-| Monday 2026-07-13 | 1 − 1 = 0d |
+| Day                  | Remaining   |
+|----------------------|-------------|
+| Saturday 2026-07-11  | 3 − 1 = 2d  |
+| Sunday 2026-07-12    | 2 − 1 = 1d  |
+| Monday 2026-07-13    | 1 − 1 = 0d  |
 
 **Result: 2026-07-13T00:00:00**
 
@@ -383,15 +403,15 @@ Start date: `2026-07-15` (Wednesday)
 Duration: `P4D` (reverse)
 No business calendar · Holidays: FR
 
-| Day | Remaining |
-|-------------------------|---------|
-| Thursday 14 (Bastille Day — closed) | |
-| Monday 2026-07-13 | 4 − 1 = 3d |
-| Sunday 12 (closed) | |
-| Saturday 11 (closed) | |
-| Friday 2026-07-10 | 3 − 1 = 2d |
-| Thursday 2026-07-09 | 2 − 1 = 1d |
-| Wednesday 2026-07-08 | 1 − 1 = 0d |
+| Day                                 | Remaining   |
+|-------------------------------------|-------------|
+| Thursday 14 (Bastille Day — closed) |             |
+| Monday 2026-07-13                   | 4 − 1 = 3d  |
+| Sunday 12 (closed)                  |             |
+| Saturday 11 (closed)                |             |
+| Friday 2026-07-10                   | 3 − 1 = 2d  |
+| Thursday 2026-07-09                 | 2 − 1 = 1d  |
+| Wednesday 2026-07-08                | 1 − 1 = 0d  |
 
 **Result: 2026-07-08T00:00:00**
 
@@ -414,23 +434,23 @@ July 3 is open; July 4 is closed (Independence Day substitute). July 14 is open 
 ]
 ```
 
-| Day | Remaining |
-|---------------------------|---------|
-| Thursday 03 | 10 − 1 = 9 |
-| Friday 04 (closed) | |
-| Saturday 05 (closed) | |
-| Sunday 06 (closed) | |
-| Monday 2026-07-07 | 9 − 1 = 8 |
-| Tuesday 2026-07-08 | 8 − 1 = 7 |
-| Wednesday 2026-07-09 | 7 − 1 = 6 |
-| Thursday 2026-07-10 | 6 − 1 = 5 |
-| Friday 2026-07-11 | 5 − 1 = 4 |
-| Saturday 12 (closed) | |
-| Sunday 13 (closed) | |
-| Monday 14 (open — specific) | 4 − 1 = 3 |
-| Tuesday 2026-07-15 | 3 − 1 = 2 |
-| Wednesday 2026-07-16 | 2 − 1 = 1 |
-| Thursday 2026-07-17 | 1 − 1 = 0 |
+| Day                         | Remaining  |
+|-----------------------------|------------|
+| Thursday 03                 | 10 − 1 = 9 |
+| Friday 04 (closed)          |            |
+| Saturday 05 (closed)        |            |
+| Sunday 06 (closed)          |            |
+| Monday 2026-07-07           | 9 − 1 = 8  |
+| Tuesday 2026-07-08          | 8 − 1 = 7  |
+| Wednesday 2026-07-09        | 7 − 1 = 6  |
+| Thursday 2026-07-10         | 6 − 1 = 5  |
+| Friday 2026-07-11           | 5 − 1 = 4  |
+| Saturday 12 (closed)        |            |
+| Sunday 13 (closed)          |            |
+| Monday 14 (open — specific) | 4 − 1 = 3  |
+| Tuesday 2026-07-15          | 3 − 1 = 2  |
+| Wednesday 2026-07-16        | 2 − 1 = 1  |
+| Thursday 2026-07-17         | 1 − 1 = 0  |
 
 **Result: 2026-07-17T00:00:00**
 
@@ -440,10 +460,10 @@ Start date: `2026-07-14`
 Duration: `P4M`
 Direction: advance · Target: before
 
-| Day | Remaining |
-|-----------------------------|---------|
-| Saturday 2026-11-14 (closed) | 4m − 4m = 0 |
-| Friday 2026-11-13 | |
+| Day                           | Remaining    |
+|-------------------------------|--------------|
+| Saturday 2026-11-14 (closed)  | 4m − 4m = 0  |
+| Friday 2026-11-13             |              |
 
 **Result: 2026-11-13T00:00:00**
 
