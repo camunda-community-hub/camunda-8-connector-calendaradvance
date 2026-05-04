@@ -9,6 +9,7 @@ import io.camunda.connector.calendaradvance.toolbox.CalendarAdvanceError;
 import io.camunda.connector.calendaradvance.toolbox.SubFunction;
 import io.camunda.connector.calendaradvance.toolbox.ValidateInput;
 import io.camunda.connector.cherrytemplate.RunnerParameter;
+import org.camunda.feel.syntaxtree.If;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,14 +53,14 @@ public class DayFunction implements SubFunction {
 
             AdvanceDayResult advanceDayResult;
 
-            /**
-             * If the period is Month or Year, then we must move the Advance Calenday By BusinessDay
-             */
+            // If the period is Month or Year, then we must move the Advance Calenday By BusinessDay
             CalendarAdvanceInput.TYPEPERIOD type = calendarInput.getTypePeriod();
-            boolean isMonthYearPeriod = CalendarAdvanceInput.TYPEPERIOD.YEAR.equals(calendarInput.getTypePeriod())
-                    || CalendarAdvanceInput.TYPEPERIOD.MONTH.equals(calendarInput.getTypePeriod());
-            if (isMonthYearPeriod) {
-                logger.info("DayFunction Start: Month Year Period mechanism");
+            boolean isMonthYearPeriod = CalendarAdvanceInput.TYPEPERIOD.YEAR.equals(type)
+                    || CalendarAdvanceInput.TYPEPERIOD.MONTH.equals(type);
+            if (isMonthYearPeriod && CalendarAdvanceInput.DAY_PROGRESSION_V_BUSINESSDAY.equals(calendarInput.getDayProgression())) {
+
+                logger.error("DayFunction: inappropriate period [{}] from duration[{}]: in BUSINESSDAY progression only days are accepted", type, calendarInput.getInputDuration());
+                throw new ConnectorException(CalendarAdvanceError.ERROR_INAPPROPRIATE_DURATION, "Period [" + type + " ] for BUSINESSDAY progression");
             }
             if (CalendarAdvanceInput.DAY_PROGRESSION_V_CALENDARDAY.equals(calendarInput.getDayProgression())
                     || isMonthYearPeriod) {
@@ -67,7 +68,11 @@ public class DayFunction implements SubFunction {
             } else if (CalendarAdvanceInput.DAY_PROGRESSION_V_BUSINESSDAY.equals(calendarInput.getDayProgression())) {
                 advanceDayResult = advanceCalendarByBusinessDay(calendarInput);
             } else {
-                throw new ConnectorException(CalendarAdvanceError.ERROR_DURING_OPERATION, "Unknow progression [" + calendarInput.getDayProgression()
+                logger.error("Unknown progression [{}] Expect [{},{}]",
+                        calendarInput.getDayProgression(),
+                        CalendarAdvanceInput.DAY_PROGRESSION_V_CALENDARDAY,
+                        CalendarAdvanceInput.DAY_PROGRESSION_V_BUSINESSDAY);
+                throw new ConnectorException(CalendarAdvanceError.ERROR_DURING_OPERATION, "Unknown progression [" + calendarInput.getDayProgression()
                         + "] Expect [" + CalendarAdvanceInput.DAY_PROGRESSION_V_CALENDARDAY
                         + "," + CalendarAdvanceInput.DAY_PROGRESSION_V_BUSINESSDAY + "]");
             }
@@ -142,6 +147,7 @@ public class DayFunction implements SubFunction {
                 CalendarAdvanceError.ERROR_BAD_PERIOD, CalendarAdvanceError.ERROR_BAD_PERIOD_EXPLANATION,
                 CalendarAdvanceError.ERROR_BAD_INPUTPARAMETER, CalendarAdvanceError.ERROR_BAD_INPUTPARAMETER_EXPLANATION,
                 CalendarAdvanceError.ERROR_BAD_STARTDATE, CalendarAdvanceError.ERROR_BAD_STARTDATE_EXPLANATION,
+                CalendarAdvanceError.ERROR_INAPPROPRIATE_DURATION, CalendarAdvanceError.ERROR_INAPROPRIATE_DURATION_EXPLANATION,
                 CalendarAdvanceError.ERROR_MISSING_INPUT, CalendarAdvanceError.ERROR_MISSING_INPUT_EXPLANATION);
     }
 
@@ -184,7 +190,8 @@ public class DayFunction implements SubFunction {
                     .plusMonths((calendarInput.isDirectionForward() ? 1 : -1) * period.getMonths())
                     .plusDays((calendarInput.isDirectionForward() ? 1 : -1) * period.getDays());
         } else {
-            throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Unknown type");
+            logger.error("Unknow duration type [{}]", calendarInput.getInputDuration());
+            throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Unknown type from duration["+calendarInput.getInputDuration()+"]");
         }
 
 

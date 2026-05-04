@@ -32,8 +32,10 @@ public class CalendarAdvanceError {
     public static final String ERROR_BAD_PERIOD = "ERROR_BAD_PERIOD";
     public static final String ERROR_BAD_PERIOD_EXPLANATION = "A period must follow the pattern <day>=<value>";
 
-
     public static final String ERROR_MISSING_INPUT = "ERROR_MISSING_INPUT";
     public static final String ERROR_MISSING_INPUT_EXPLANATION = "Missing input parameter";
+
+    public static final String ERROR_INAPPROPRIATE_DURATION = "ERROR_INAPROPRIATE_DURATION";
+    public static final String ERROR_INAPROPRIATE_DURATION_EXPLANATION = "Witb BusinessDay progression, duration must not be in months or years, but in days";
 
 }

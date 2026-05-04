@@ -45,6 +45,7 @@ public class CalendarAdvanceFunction implements OutboundConnectorFunction, Cherr
         try {
             calendarAdvanceInput = outboundConnectorContext.bindVariables(CalendarAdvanceInput.class);
         } catch (Exception e) {
+            logger.error("Bad Input Parameters to bindVariables ",e);
             throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_INPUTPARAMETER, "CalendarAdvance can't bind variable " + e.getMessage() + "]");
         }
         // search the sub-function referenced
@@ -58,7 +59,7 @@ public class CalendarAdvanceFunction implements OutboundConnectorFunction, Cherr
                 return calendarAdvanceOutput;
             }
         }
-        logger.error("CalendarAdvanceFunction Unknow function [{}]", function);
+        logger.error("CalendarAdvanceFunction Unknown function [{}]", function);
         throw new ConnectorException(CalendarAdvanceError.ERROR_UNKNOWN_FUNCTION, "CalendarAdvance Unknown function " + function + "]");
 
     }

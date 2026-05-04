@@ -66,11 +66,12 @@ public class HolidayContainer {
     public CalendarHoliday getCalendar(int year, String countryCode) throws ConnectorException {
         String key = countryCode + "-" + year;
         try {
-            return calendars.computeIfAbsent(key, k -> loadHoliday(year, countryCode));
+            return calendars.computeIfAbsent(key, _ -> loadHoliday(year, countryCode));
         } catch (RuntimeException e) {
             if (e.getCause() instanceof ConnectorException ce) {
                 throw ce;
             }
+            logger.error("Error when trying to load the calendar year[{",e);
             throw new ConnectorException(CalendarAdvanceError.ERROR_CANT_GET_HOLIDAYS, "Error when trying to load the calendar " + e.getMessage());
         }
     }
