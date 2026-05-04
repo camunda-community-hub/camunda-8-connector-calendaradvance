@@ -8,6 +8,8 @@
 
 The connector calculate a new date from an existing one, and advance (or backward) by a delay. 
 
+
+ 
 It takes into account:
 * Business days
 * Open time (for example, office is open 9:00 to 18:00)
@@ -16,6 +18,23 @@ It takes into account:
 The connector has to mode
 * days
 * hours
+
+
+## Business Day
+The default business day calendar is Monday 9:00 to 18:00. Via the parameter `business Calendar` a specific calendar can be provided.
+
+Visit [Business Calendar](# Hours) section
+
+## Holidays
+The webSite "https://date.nager.at/api/v3/PublicHolidays/" is used to get holidays for a specific country. Multiple country can be provided to cumulate holidays.
+Specific Holidays can be provided in the `business Calendar`.
+
+Visit [Holidays](## Holidays) section.
+
+
+## Installation
+See the chapter [How to install this connector](# How to install this connector?) for installation
+
 
 # Days
 
@@ -32,6 +51,13 @@ The result is Wednesday, January 21
 
 As opposite, starting from Wednesday, January 21 and moving backward, result will be on Thursday, January 15, 2026
 
+# Months and years
+
+Advancing by months cannot be accurately converted into a fixed number of days. For example, moving one month from January 5 to February 5 is 31 days, while moving one month from February 5 to March 5 is 28 or 29 days.
+
+Therefore, when a delay expressed in months or years (e.g., `P1M`, `P2M13D`, or `P1Y`) is detected, the calculation switches to a month-based approach.
+
+
 # Hours
 The hour mechanism works as the same, except the delay is given in minutes, using ISO‑8601. Format is P(n)Y(n)M(n)DT(n)H(n)M(n)S)
 
@@ -43,19 +69,17 @@ The reference is a date, in seconds. For example
 }
 ```
 
-The business day must be more precise, and give in the day the different slot. For example
+The business day must be more precise, and give in the day the different slot. For example provide in the `business Calendar` field:
 ```json
 
-{
-  "businessCalendar" : [
+[
     "Monday=08:00:00-12:00:00,14:00:00-18:00:00",
     "Tuesday=08:00:00-12:00:00,14:00:00-18:00:00",
     "Wednesday=08:00:00-12:00:00,14:00:00-18:00:00",
     "Thursday=08:00:00-17:00:00",
     "Friday=08:00:00-12:00:00,14:00:00-17:30:00",
     "Day_2026/07/14=08:00:00-12:00:00"
-    ]
-}
+]
 ```
 
 Via this definition:
@@ -65,7 +89,47 @@ Via this definition:
 * Saturday and Sunday are not defined, they are considered as close day
 * 14 july 2026 has a special definition, only the morning is open. It will override the default Tuesday definition.
 
-The calculation will apply the delay on this calendar.
+The duration is applied according to this calendar. For example, a 10-hour duration starting on Monday at 08:00 will use the 08:00–12:00 slot (4 hours), then 14:00–18:00 (4 hours), and finally continue on Tuesday morning from 08:00 to 10:00 to complete the remaining 2 hours.
+
+## 24/7 calendar
+
+To provide a 24/7 hours, use the special code `24/7`. For example, in the `business Calendar` field:
+```json
+
+[
+    "24/7"
+]
+```
+
+## Holidays
+
+The webSite "https://date.nager.at/api/v3/PublicHolidays/" is used to get holidays for a specific country. Multiple country can be provided to cumulate holidays.
+Specific Holidays can be provided in the `business Calendar`.
+
+To provide holiday, in the `Holidays Country` provide a list like
+
+```json
+|"FR"]
+```
+
+Or to cumulate multiple countries:
+
+```json
+|"FR", "US"]
+```
+
+
+
+To provide specific close day, use in the `business Calendar` field
+```yaml
+[
+  "Day_2026/07/14=08:00:00-12:00:00"
+  "Day_2026/07/15=08:00:00-08:00"
+]
+```
+Doing that :
+July 15 is open, even it is a closed day in the French calendar
+july 15 is close (time zone given is null)
 
 
 ## Timezone or no timezone?
@@ -75,9 +139,12 @@ First, some vocabulary:
 * a ZonedDateTime contains a time zone. it is something like `2026-01-16T15:34:00Z` (UTC) or `2026-01-16T09:15:00-05:00` (New York)
 * the Business Calendar may be defined in a timezone, or not
 
-THere is two different situation
+There is two different situation
 * No time zone are involved. From a Start date at `09:15`, and a duration of 2 hours, a business calendar `09:00-18:00`, the result should be `11:15`
-* Time zone is involved in the input AND in the business Calendar. When the business Calendar is provided for California : `09:00-18:00`. The result is now `11:00` California time, i.e. `14:00` New York.
+* Time zone is involved in the input AND in the business Calendar. The Input Time zone is necessary (example, Start date `09:15 New York`) and the time zone on the Business Calendar (`Los Angeles` calendar).
+  `09:15 New York` means `06:15 Los Angeles`. For the two-hour duration, the slot is `09:00 to 11:00 Los Angeles`. The result is `11:00 Los Angeles`, i.e., ` 14:00 New York.`
+
+ 
 
 **Time Zone in Input, Business Calendar Time Zone**
 To enable the time zone calculation, both inout and business calendar must reference a time zone.
@@ -96,7 +163,7 @@ Note: at the end, the connector provide two dates
 * a LocalDateTime, without any timezone. Actually, this date is in the Business Calendar Timezone or in the machine timezone
 * a ZonedDateTime. This date is provided in the input time zone, or in the Business Calendar TimeZone or in the machine time zone.
 
-** Detail of algorithm**
+**Detail of algorithm**
 
 > According to the time zone discussion, first the date is transform to a LocalDateTime in the Business Calendar Time Zone**
 
@@ -260,10 +327,12 @@ Business calendar :
   "Wednesday=09:00:00-18:00:00",
   "Thursday=09:00:00-18:00:00",
   "Friday=09:00:00-18:00:00",
-  "Day_2026/05/14=09:00-11:40", // Ascension day : it's a holiday in France, but we are open
-  "Day_2026/05/15=09:00-11:50"]; // Day after Ascension"
+  "Day_2026/05/14=09:00-11:40", 
+  "Day_2026/05/15=09:00-11:50"]
 ```
 
+`2026/05/14` is Ascension day in France
+`2026/05/15` is after the ascension
 
 Use Holiday true / FR
 
@@ -398,10 +467,11 @@ one day is open with specific time schedule
 "Wednesday=09:00:00-18:00:00",
 "Thursday=09:00:00-18:00:00",
 "Friday=09:00:00-18:00:00",
-"Day_2026/07/14=09:00-11:40", // July 14 day : it's a holiday in France, but we are open
-"Day_2026/05/15=09:00-11:50"];
+"Day_2026/07/14=09:00-11:40", 
+"Day_2026/05/15=09:00-11:50"]
 ```
 
+`2026/07/14` is a holiday in France
 
 | Day                       | Relicat |
 |---------------------------|---------|
@@ -438,3 +508,57 @@ Target progression: before
 
 
 Result: 2026-07-13T00:00:00
+
+# How to install this connector?
+
+## Element-template
+
+Go under the `element-templates` folder, or use this link to download it [calendaradvance-function.json](element-templates/calendaradvance-function.json)
+
+## JAR file
+
+Jar files are present under the Releases section.
+
+Different methods exists to execute it in your cluster:
+
+### Via the connector runtime
+Configure the connector runtime to download the JAR at initialization. 
+
+```yaml
+connectors:
+  initContainers:
+    - name: calendaradvance
+      image: appropriate/curl
+      securityContext:
+        runAsUser: 1000
+        runAsNonRoot: true      
+      args:
+        - "-L"
+        - "-o"
+        - "/opt/custom/calendar-advance-function-1.0.0.jar"
+        - "https://github.com/camunda-community-hub/camunda-8-connector-calendaradvance/releases/download/1.0.0/calendar-advance-function-1.0.0.jar"
+      volumeMounts:
+        - name: custom-connectors
+          mountPath: /opt/custom
+
+  extraVolumes:
+    - name: custom-connectors
+      emptyDir: {}
+
+  extraVolumeMounts:
+    - name: custom-connectors
+      mountPath: /opt/custom/calendar-advance-function-1.0.0.jar
+      subPath: calendar-advance-function-1.0.0.jar
+```
+
+Visit https://github.com/camunda-community-hub/challenges/blob/main/c8-connector-deployment-challenge/solution/ConnectorRuntime.md
+
+### Via a image
+
+Clone the repository.
+
+Under `k8s` folder, create your own image, and use it on your cluster: [README.md](k8s/README.md)
+
+### Via any application
+
+Use the JAR file and onboard it in your own application. 
