@@ -140,11 +140,14 @@
 
     <build>
         <resources>
-            <!-- Solve the project.version in the banner.txt -->
-            <!-- spring-boot-starter-parent : delimiter is @@ -->
             <resource>
                 <directory>src/main/resources</directory>
                 <filtering>true</filtering>
+                <excludes>
+                    <exclude>banner.txt</exclude>
+                    <exclude>application.yaml</exclude>
+                    <exclude>application.yml</exclude>
+                </excludes>
             </resource>
 
         </resources>
@@ -159,6 +162,10 @@
                         <goals>
                             <goal>shade</goal>
                         </goals>
+                        <configuration>
+                            <shadedClassifierName>with-dependencies</shadedClassifierName>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
