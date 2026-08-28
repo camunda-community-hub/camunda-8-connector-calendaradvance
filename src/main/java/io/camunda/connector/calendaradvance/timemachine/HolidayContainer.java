@@ -85,6 +85,11 @@ public class HolidayContainer {
      * @throws RuntimeException in case of error
      */
     private CalendarHoliday loadHoliday(int year, String countryCode) throws RuntimeException {
+        logger.info("Loading holiday for year[{}] country[{}]", year, countryCode);
+        if (countryCode == null || !countryCode.matches("[a-zA-Z0-9]{2}")) {
+            throw new RuntimeException(new ConnectorException(CalendarAdvanceError.ERROR_BAD_COUNTRYCODE,
+                    "Country code [" + countryCode + "] must be exactly 2 alphanumeric characters"));
+        }
         String url = "https://date.nager.at/api/v3/PublicHolidays/" + year + "/" + countryCode;
         long beginTime = System.currentTimeMillis();
         try {

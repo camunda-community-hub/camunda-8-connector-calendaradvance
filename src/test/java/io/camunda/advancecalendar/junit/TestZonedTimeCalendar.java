@@ -47,19 +47,22 @@ public class TestZonedTimeCalendar {
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
             CalendarAdvanceOutput output = calendarFunction.execute(context);
+            assert (output.listResultDates.size() == 1);
+            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
 
-            logger.info("Result FoundDate:{} resultDate[{}] sourceZoneDate[{}] resultZonedDate[{}] Periods[{}]", output.foundDate, output.resultDate,
-                    calendarInput.startDate,
-                    output.resultZonedDate,
-                    output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+                logger.info("Result FoundDate:{} resultDate[{}] sourceZoneDate[{}] resultZonedDate[{}] Periods[{}]", result.foundDate, result.resultDate,
+                        calendarInput.startDate,
+                        result.resultZonedDate,
+                        result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
 
-            assertTrue(output.foundDate);
-            // calculate now + 50 m
-            ZonedDateTime nowPlus50Zoned = now.plusMinutes(50);
-            LocalDateTime nowPlus50Local = nowPlus50Zoned.toLocalDateTime();
+                assertTrue(result.foundDate);
+                // calculate now + 50 m
+                ZonedDateTime nowPlus50Zoned = now.plusMinutes(50);
+                LocalDateTime nowPlus50Local = nowPlus50Zoned.toLocalDateTime();
 
-            assert(output.resultZonedDate.toInstant().toEpochMilli() == nowPlus50Zoned.toInstant().toEpochMilli());
-            assert (output.resultDate.equals(nowPlus50Local));
+                assert (result.resultZonedDate.toInstant().toEpochMilli() == nowPlus50Zoned.toInstant().toEpochMilli());
+                assert (result.resultDate.equals(nowPlus50Local));
+            }
 
             logger.info("testNowPlus50 OK ");
         } catch (Exception e) {
@@ -86,20 +89,22 @@ public class TestZonedTimeCalendar {
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
             CalendarAdvanceOutput output = calendarFunction.execute(context);
+            assert (output.listResultDates.size() == 1);
+            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
 
-            logger.info("nowPlus3dLocal: Result FoundDate:{} resultDate[{}] sourceZoneDate[{}] resultZonedDate[{}] Periods[{}]", output.foundDate, output.resultDate,
-                    calendarInput.startDate,
-                    output.resultZonedDate,
-                    output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+                logger.info("nowPlus3dLocal: Result FoundDate:{} resultDate[{}] sourceZoneDate[{}] resultZonedDate[{}] Periods[{}]", result.foundDate, result.resultDate,
+                        calendarInput.startDate,
+                        result.resultZonedDate,
+                        result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
 
-            assertTrue(output.foundDate);
-            // calculate now + 50 m
-            ZonedDateTime nowPlus3days = now.plusDays(3);
-            LocalDateTime nowPlus3dLocal = nowPlus3days.toLocalDateTime();
+                assertTrue(result.foundDate);
+                // calculate now + 50 m
+                ZonedDateTime nowPlus3days = now.plusDays(3);
+                LocalDateTime nowPlus3dLocal = nowPlus3days.toLocalDateTime();
 
-            assert(output.resultZonedDate.toInstant().toEpochMilli() == nowPlus3days.toInstant().toEpochMilli());
-            assert (output.resultDate.equals(nowPlus3dLocal));
-
+                assert (result.resultZonedDate.toInstant().toEpochMilli() == nowPlus3days.toInstant().toEpochMilli());
+                assert (result.resultDate.equals(nowPlus3dLocal));
+            }
             logger.info("nowPlus3dLocal OK ");
         } catch (Exception e) {
             logger.error("nowPlus3dLocal", e);
@@ -131,24 +136,26 @@ public class TestZonedTimeCalendar {
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
             CalendarAdvanceOutput output = calendarFunction.execute(context);
+            assert (output.listResultDates.size() == 1);
+            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
 
-            logger.info("testNewYorkLosAngeles: Result FoundDate:{} resultDate[{}] sourceZoneDate[{}] resultZonedDate[{}] Periods[{}]", output.foundDate, output.resultDate,
-                    calendarInput.startDate,
-                    output.resultZonedDate,
-                    output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+                logger.info("testNewYorkLosAngeles: Result FoundDate:{} resultDate[{}] sourceZoneDate[{}] resultZonedDate[{}] Periods[{}]", result.foundDate, result.resultDate,
+                        calendarInput.startDate,
+                        result.resultZonedDate,
+                        result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
 
-            assertTrue(output.foundDate);
-            // calculate now + 50 m
-            ZonedDateTime resultNewYork = ZonedDateTime.of(
-                    2026, 3, 30,   // year, month, day
-                    14, 10, 0, 0,   // hour, minute, second, nano
-                    ZoneId.of("America/New_York")
-            );
+                assertTrue(result.foundDate);
+                // calculate now + 50 m
+                ZonedDateTime resultNewYork = ZonedDateTime.of(
+                        2026, 3, 30,   // year, month, day
+                        14, 10, 0, 0,   // hour, minute, second, nano
+                        ZoneId.of("America/New_York")
+                );
 
-            assertEquals(output.resultZonedDate.toInstant().toEpochMilli(), resultNewYork.toInstant().toEpochMilli());
-            assertEquals(output.resultZonedDate.getOffset(), zdtNewYork.getOffset());
-            assertEquals(LocalDateTime.of(2026, 3, 30, 11, 10), output.resultDate);
-
+                assertEquals(result.resultZonedDate.toInstant().toEpochMilli(), resultNewYork.toInstant().toEpochMilli());
+                assertEquals(result.resultZonedDate.getOffset(), zdtNewYork.getOffset());
+                assertEquals(LocalDateTime.of(2026, 3, 30, 11, 10), result.resultDate);
+            }
             logger.info("testNewYorkLosAngeles OK ");
         } catch (Exception e) {
             logger.error("testNewYorkLosAngeles", e);
@@ -181,24 +188,26 @@ public class TestZonedTimeCalendar {
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
             CalendarAdvanceOutput output = calendarFunction.execute(context);
+            assert (output.listResultDates.size() == 1);
+            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
 
-            logger.info("testDenverNewYork: Result FoundDate:{} resultDate[{}] sourceZoneDate[{}] resultZonedDate[{}] Periods[{}]", output.foundDate, output.resultDate,
-                    calendarInput.startDate,
-                    output.resultZonedDate,
-                    output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+                logger.info("testDenverNewYork: Result FoundDate:{} resultDate[{}] sourceZoneDate[{}] resultZonedDate[{}] Periods[{}]", result.foundDate, result.resultDate,
+                        calendarInput.startDate,
+                        result.resultZonedDate,
+                        result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
 
-            assertTrue(output.foundDate);
-            // calculate now + 50 m
-            ZonedDateTime resultDenver = ZonedDateTime.of(
-                    2026, 3, 31,   // year, month, day
-                    8, 30, 0, 0,   // hour, minute, second, nano
-                    ZoneId.of("America/Denver")
-            );
+                assertTrue(result.foundDate);
+                // calculate now + 50 m
+                ZonedDateTime resultDenver = ZonedDateTime.of(
+                        2026, 3, 31,   // year, month, day
+                        8, 30, 0, 0,   // hour, minute, second, nano
+                        ZoneId.of("America/Denver")
+                );
 
-            assertEquals(output.resultZonedDate.toInstant().toEpochMilli(), resultDenver.toInstant().toEpochMilli());
-            assert(output.resultZonedDate.getOffset().equals(zdtDenver.getOffset()));
-            assertEquals(LocalDateTime.of(2026, 3, 31, 10, 30), output.resultDate);
-
+                assertEquals(result.resultZonedDate.toInstant().toEpochMilli(), resultDenver.toInstant().toEpochMilli());
+                assert (result.resultZonedDate.getOffset().equals(zdtDenver.getOffset()));
+                assertEquals(LocalDateTime.of(2026, 3, 31, 10, 30), result.resultDate);
+            }
             logger.info("testDenverNewYork OK ");
         } catch (Exception e) {
             logger.error("testDenverNewYork", e);

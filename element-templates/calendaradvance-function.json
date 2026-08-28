@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/@camunda/zeebe-element-templates-json-schema/resources/schema.json",
-  "name": "Calendar advance function",
+  "name": "CalendarAdvanceFunction",
   "id": "io.camunda.connector.calendaradvance.CalendarAdvanceFunction",
   "description": "Advance a date in calendar in time or day, using duration and business calendar, holidays: Advance the calendar by days. Advance my be forward or backward,Advance in the Calendar based on hours time.",
   "documentationRef": "https://docs.camunda.io/docs/components/modeler/web-modeler/connectors/available-connectors/template/",
@@ -12,6 +12,7 @@
     "name": "Connectors"
   },
   "appliesTo": [
+    "bpmn:Task",
     "bpmn:ServiceTask"
   ],
   "elementType": {
@@ -25,6 +26,10 @@
     {
       "id": "Output",
       "label": "Output"
+    },
+    {
+      "id": "errorManagement",
+      "label": "Error Management"
     }
   ],
   "properties": [
@@ -70,7 +75,7 @@
     {
       "id": "startDate",
       "label": "Start Date",
-      "description": "Calculation sart with this date",
+      "description": "Start from this day",
       "type": "String",
       "feel": "optional",
       "binding": {
@@ -85,15 +90,24 @@
     {
       "id": "duration",
       "label": "Duration",
-      "description": "Duration ISO 8601 : P2DT5H23M54S",
+      "description": "Duration ISO 8601 : P2DT5H23M54S. When a Month or Year is given with CalendarDay, then it step by this duration",
       "type": "String",
       "feel": "optional",
       "binding": {
         "name": "duration",
         "type": "zeebe:input"
       },
-      "constraints": {
-        "notEmpty": true
+      "group": "Input"
+    },
+    {
+      "id": "durations",
+      "label": "DurationS",
+      "description": "List of Durations ISO 8601 : P2DT5H23M54S. When a Month or Year is given with CalendarDay, then it step by this duration",
+      "type": "String",
+      "feel": "optional",
+      "binding": {
+        "name": "durations",
+        "type": "zeebe:input"
       },
       "group": "Input"
     },
@@ -370,8 +384,8 @@
     },
     {
       "id": "listPeriods_optional",
-      "label": "Saved List of period Date?",
-      "description": "List of period calculated",
+      "label": "Saved List of periods Date?",
+      "description": "List of periods calculated",
       "value": "false",
       "binding": {
         "name": "listPeriods_optional",
@@ -396,12 +410,53 @@
         "equals": "true"
       },
       "id": "listPeriods",
-      "label": "List of period Date",
-      "description": "List of period calculated",
+      "label": "List of periods Date",
+      "description": "List of periods calculated",
       "type": "String",
       "feel": "optional",
       "binding": {
         "source": "\u003d result.listPeriods",
+        "type": "zeebe:output"
+      },
+      "constraints": {
+        "notEmpty": true
+      },
+      "group": "Output"
+    },
+    {
+      "id": "listResultDates_optional",
+      "label": "Saved List of result dates?",
+      "description": "List of results date, populate by a list when multiple durations (in input durations) are provided",
+      "value": "false",
+      "binding": {
+        "name": "listResultDates_optional",
+        "type": "zeebe:input"
+      },
+      "type": "Dropdown",
+      "choices": [
+        {
+          "name": "Yes",
+          "value": "true"
+        },
+        {
+          "name": "No",
+          "value": "false"
+        }
+      ],
+      "group": "Output"
+    },
+    {
+      "condition": {
+        "property": "listResultDates_optional",
+        "equals": "true"
+      },
+      "id": "listResultDates",
+      "label": "List of result dates",
+      "description": "List of results date, populate by a list when multiple durations (in input durations) are provided",
+      "type": "String",
+      "feel": "optional",
+      "binding": {
+        "source": "\u003d result.listResultDates",
         "type": "zeebe:output"
       },
       "constraints": {
@@ -457,14 +512,16 @@
       "group": "Output"
     },
     {
-      "label": "ControllerPage Expression",
-      "description": "Expression to define BPMN Errors to throw",
-      "type": "Hidden",
-      "value": "if is defined(error) then bpmnError(error.code, error.message) else null",
+      "label": "Error Expression",
+      "description": "Expression to define BPMN Errors to throw with error context",
+      "type": "String",
+      "value": "if is defined(error) then bpmnError(error.code, error.message, {connectorError: {error: error.code, message: error.message}}) else null",
+      "feel": "optional",
       "binding": {
         "key": "errorExpression",
         "type": "zeebe:taskHeader"
-      }
+      },
+      "group": "errorManagement"
     }
   ]
 }

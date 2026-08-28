@@ -41,21 +41,29 @@ public class TestDayCalendar {
         calendarInput.businessCalendar = null;
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
-            logger.info("backBusinessDay Result FoundDate:{} resultDate[{}] resultZonedDate[{}] periods[{}]",
-                    output.foundDate,
-                    output.resultDate.toLocalDate(),
-                    output.resultZonedDate,
-                    output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
-            // Duration: 730 mn
-            // Wednesday 15: 94mn
-            // Tuesday 14 : holiday
-            // Monday 13:  9h=> 540
-            // Friday 10: 96 mn => 18:00-96=16:24
-            assertTrue(output.foundDate);
-            assert (output.resultDate.toLocalDate().equals(LocalDate.of(2026, 7, 10)));
-            assertNull(output.resultZonedDate);
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
+            assert (calendarAdvanceOutput.listResultDates.size() == 1);
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.listResultDates) {
+                logger.info("backBusinessDay Result FoundDate:{} resultDate[{}] resultZonedDate[{}] periods[{}]",
+                        result.foundDate,
+                        result.resultDate.toLocalDate(),
+                        result.resultZonedDate,
+                        result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+                // Duration: 730 mn
+                // Wednesday 15: 94mn
+                // Tuesday 14 : holiday
+                // Monday 13:  9h=> 540
+                // Friday 10: 96 mn => 18:00-96=16:24
+                assertTrue(result.foundDate);
+                assert (result.resultDate.toLocalDate().equals(LocalDate.of(2026, 7, 10)));
+                assertNull(result.resultZonedDate);
+            }
+            // Check that result are correct set too
+            assertTrue(calendarAdvanceOutput.isFoundDate());
+            assert (calendarAdvanceOutput.getResultDate().toLocalDate().equals(LocalDate.of(2026, 7, 10)));
+            assertNull(calendarAdvanceOutput.getResultZonedDate());
             logger.info("backBusinessDay OK ");
+
         } catch (Exception e) {
             logger.error("backBusinessDay", e);
             assert false;
@@ -82,15 +90,23 @@ public class TestDayCalendar {
         calendarInput.businessCalendar = null;
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
-            logger.info("advanceBusinessDay Result FoundDate:{} resultDate[{}] resultZonedDate[{}] period[{}]",
-                    output.foundDate,
-                    output.resultDate.toLocalDate(),
-                    output.resultZonedDate,
-                    output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
-            assertTrue(output.foundDate);
-            assert (output.resultDate.toLocalDate().equals(LocalDate.of(2026, 7, 16)));
-            assertNull(output.resultZonedDate);
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
+            assert (calendarAdvanceOutput.listResultDates.size() == 1);
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.listResultDates) {
+                logger.info("advanceBusinessDay Result FoundDate:{} resultDate[{}] resultZonedDate[{}] period[{}]",
+                        result.foundDate,
+                        result.resultDate.toLocalDate(),
+                        result.resultZonedDate,
+                        result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+                assertTrue(result.foundDate);
+                assert (result.resultDate.toLocalDate().equals(LocalDate.of(2026, 7, 16)));
+                assertNull(result.resultZonedDate);
+            }
+            // Check that result are correct set too
+            assertTrue(calendarAdvanceOutput.isFoundDate());
+            assert (calendarAdvanceOutput.getResultDate().toLocalDate().equals(LocalDate.of(2026, 7, 16)));
+            assertNull(calendarAdvanceOutput.getResultZonedDate());
+
             logger.info("advanceBusinessDay OK ");
         } catch (Exception e) {
             logger.error("advanceBusinessDay", e);
@@ -118,15 +134,23 @@ public class TestDayCalendar {
         calendarInput.businessCalendar = SlotContainer.CALENDAR_24_7;
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
-            logger.info("advanceBusinessDay Result FoundDate:{} resultDate[{}] resultZonedDate[{}] period[{}]",
-                    output.foundDate,
-                    output.resultDate.toLocalDate(),
-                    output.resultZonedDate,
-                    output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
-            assertTrue(output.foundDate);
-            assert (output.resultDate.toLocalDate().equals(LocalDate.of(2026, 7, 15)));
-            assertNull(output.resultZonedDate);
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
+            assert (calendarAdvanceOutput.listResultDates.size() == 1);
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.listResultDates) {
+                logger.info("advanceBusinessDay Result FoundDate:{} resultDate[{}] resultZonedDate[{}] period[{}]",
+                        result.foundDate,
+                        result.resultDate.toLocalDate(),
+                        result.resultZonedDate,
+                        result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+                assertTrue(result.foundDate);
+                assert (result.resultDate.toLocalDate().equals(LocalDate.of(2026, 7, 15)));
+                assertNull(result.resultZonedDate);
+            }
+            // Check that result are correct set too
+            assertTrue(calendarAdvanceOutput.isFoundDate());
+            assert (calendarAdvanceOutput.getResultDate().toLocalDate().equals(LocalDate.of(2026, 7, 15)));
+            assertNull(calendarAdvanceOutput.getResultZonedDate());
+
             logger.info("advanceBusinessDay OK ");
         } catch (Exception e) {
             logger.error("advanceBusinessDay", e);
@@ -154,12 +178,19 @@ public class TestDayCalendar {
         calendarInput.businessCalendar = null;
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
-            logger.info("testBackCalendarDayOpen Result FoundDate:{} resultDate[{}] resultZonedDate[{}]", output.foundDate, output.resultDate.toLocalDate(), output.resultZonedDate);
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
+            assert (calendarAdvanceOutput.listResultDates.size() == 1);
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.listResultDates) {
+                logger.info("testBackCalendarDayOpen Result FoundDate:{} resultDate[{}] resultZonedDate[{}]", result.foundDate, result.resultDate.toLocalDate(), result.resultZonedDate);
+                assertTrue(result.foundDate);
+                assert (result.resultDate.toLocalDate().equals(LocalDate.of(2026, 7, 13)));
+                assertNull(result.resultZonedDate);
+            }
+            // Check that result are correct set too
+            assertTrue(calendarAdvanceOutput.isFoundDate());
+            assert (calendarAdvanceOutput.getResultDate().toLocalDate().equals(LocalDate.of(2026, 7, 13)));
+            assertNull(calendarAdvanceOutput.getResultZonedDate());
 
-            assertTrue(output.foundDate);
-            assert (output.resultDate.toLocalDate().equals(LocalDate.of(2026, 7, 13)));
-            assertNull(output.resultZonedDate);
             logger.info("testBackCalendarDayOpen OK ");
         } catch (Exception e) {
             logger.error("testBackCalendarDayOpen", e);
@@ -186,15 +217,23 @@ public class TestDayCalendar {
         calendarInput.businessCalendar = null;
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
-            logger.info("testBackCalendarDayClosedAfterPolicy Result FoundDate:{} resultDate[{}] resultZonedDate[{}]",
-                    output.foundDate,
-                    output.resultDate.toLocalDate(),
-                    output.resultZonedDate);
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
+            assert (calendarAdvanceOutput.listResultDates.size() == 1);
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.listResultDates) {
+                logger.info("testBackCalendarDayClosedAfterPolicy Result FoundDate:{} resultDate[{}] resultZonedDate[{}]",
+                        result.foundDate,
+                        result.resultDate.toLocalDate(),
+                        result.resultZonedDate);
 
-            assertTrue(output.foundDate);
-            assert (output.resultDate.toLocalDate().equals(LocalDate.of(2026, 7, 10)));
-            assertNull(output.resultZonedDate);
+                assertTrue(result.foundDate);
+                assert (result.resultDate.toLocalDate().equals(LocalDate.of(2026, 7, 10)));
+                assertNull(result.resultZonedDate);
+            }
+            // Check that result are correct set too
+            assertTrue(calendarAdvanceOutput.isFoundDate());
+            assert (calendarAdvanceOutput.getResultDate().toLocalDate().equals(LocalDate.of(2026, 7, 10)));
+            assertNull(calendarAdvanceOutput.getResultZonedDate());
+
             logger.info("testBackCalendarDayClosedAfterPolicy OK ");
         } catch (Exception e) {
             logger.error("testBackCalendarDayClosedAfterPolicy", e);
@@ -222,16 +261,24 @@ public class TestDayCalendar {
         calendarInput.businessCalendar = null;
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
-            logger.info("testBackCalendarDayClosedAfterPolicy Result FoundDate:{} resultDate[{}] resultZonedDate[{}] periods[{}]",
-                    output.foundDate,
-                    output.resultDate.toLocalDate(),
-                    output.resultZonedDate,
-                    output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
+            assert (calendarAdvanceOutput.listResultDates.size() == 1);
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.listResultDates) {
+                logger.info("testBackCalendarDayClosedAfterPolicy Result FoundDate:{} resultDate[{}] resultZonedDate[{}] periods[{}]",
+                        result.foundDate,
+                        result.resultDate.toLocalDate(),
+                        result.resultZonedDate,
+                        result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
 
-            assertTrue(output.foundDate);
-            assert (output.resultDate.toLocalDate().equals(LocalDate.of(2026, 7, 13)));
-            assertNull(output.resultZonedDate);
+                assertTrue(result.foundDate);
+                assert (result.resultDate.toLocalDate().equals(LocalDate.of(2026, 7, 13)));
+                assertNull(result.resultZonedDate);
+            }
+            // Check that result are correct set too
+            assertTrue(calendarAdvanceOutput.isFoundDate());
+            assert (calendarAdvanceOutput.getResultDate().toLocalDate().equals(LocalDate.of(2026, 7, 13)));
+            assertNull(calendarAdvanceOutput.getResultZonedDate());
+
             logger.info("testBackCalendarDayClosedAfterPolicy OK ");
         } catch (Exception e) {
             logger.error("testBackCalendarDayClosedAfterPolicy", e);
@@ -258,16 +305,25 @@ public class TestDayCalendar {
         calendarInput.businessCalendar = null;
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
-            logger.info("testBackCalendarDayClosedAfterPolicy Result FoundDate:{} resultDate[{}] resultZonedDate[{}] periods[{}]",
-                    output.foundDate,
-                    output.resultDate.toLocalDate(),
-                    output.resultZonedDate,
-                    output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
+            assert (calendarAdvanceOutput.listResultDates.size() == 1);
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.listResultDates) {
 
-            assertTrue(output.foundDate);
-            assert (output.resultDate.toLocalDate().equals(LocalDate.of(2026, 7, 12)));
-            assertNull(output.resultZonedDate);
+                logger.info("testBackCalendarDayClosedAfterPolicy Result FoundDate:{} resultDate[{}] resultZonedDate[{}] periods[{}]",
+                        result.foundDate,
+                        result.resultDate.toLocalDate(),
+                        result.resultZonedDate,
+                        result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+
+                assertTrue(result.foundDate);
+                assert (result.resultDate.toLocalDate().equals(LocalDate.of(2026, 7, 12)));
+                assertNull(result.resultZonedDate);
+            }
+            // Check that result are correct set too
+            assertTrue(calendarAdvanceOutput.isFoundDate());
+            assert (calendarAdvanceOutput.getResultDate().toLocalDate().equals(LocalDate.of(2026, 7, 12)));
+            assertNull(calendarAdvanceOutput.getResultZonedDate());
+
             logger.info("testBackCalendarDayClosedAfterPolicy OK ");
         } catch (Exception e) {
             logger.error("testBackCalendarDayClosedAfterPolicy", e);
@@ -294,16 +350,25 @@ public class TestDayCalendar {
         calendarInput.businessCalendar = null;
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
-            logger.info("testForwardCalendarDayOpen Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]",
-                    output.foundDate,
-                    output.resultDate.toLocalDate(),
-                    output.resultZonedDate,
-                    output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
+            assert (calendarAdvanceOutput.listResultDates.size() == 1);
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.listResultDates) {
 
-            assertTrue(output.foundDate);
-            assert (output.resultDate.toLocalDate().equals(LocalDate.of(2026, 7, 13)));
-            assertNull(output.resultZonedDate);
+                logger.info("testForwardCalendarDayOpen Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]",
+                        result.foundDate,
+                        result.resultDate.toLocalDate(),
+                        result.resultZonedDate,
+                        result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+
+                assertTrue(result.foundDate);
+                assert (result.resultDate.toLocalDate().equals(LocalDate.of(2026, 7, 13)));
+                assertNull(result.resultZonedDate);
+            }
+            // Check that result are correct set too
+            assertTrue(calendarAdvanceOutput.isFoundDate());
+            assert (calendarAdvanceOutput.getResultDate().toLocalDate().equals(LocalDate.of(2026, 7, 13)));
+            assertNull(calendarAdvanceOutput.getResultZonedDate());
+
             logger.info("testForwardCalendarDayOpen OK ");
         } catch (Exception e) {
             logger.error("testForwardCalendarDayOpen", e);
@@ -330,16 +395,25 @@ public class TestDayCalendar {
         calendarInput.businessCalendar = null;
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
-            logger.info("forwardCalendarDayClosedAfterPolicy Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]",
-                    output.foundDate,
-                    output.resultDate.toLocalDate(),
-                    output.resultZonedDate,
-                    output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
+            assert (calendarAdvanceOutput.listResultDates.size() == 1);
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.listResultDates) {
 
-            assertTrue(output.foundDate);
-            assert (output.resultDate.toLocalDate().equals(LocalDate.of(2026, 7, 15)));
-            assertNull(output.resultZonedDate);
+                logger.info("forwardCalendarDayClosedAfterPolicy Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]",
+                        result.foundDate,
+                        result.resultDate.toLocalDate(),
+                        result.resultZonedDate,
+                        result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+
+                assertTrue(result.foundDate);
+                assert (result.resultDate.toLocalDate().equals(LocalDate.of(2026, 7, 15)));
+                assertNull(result.resultZonedDate);
+            }
+            // Check that result are correct set too
+            assertTrue(calendarAdvanceOutput.isFoundDate());
+            assert (calendarAdvanceOutput.getResultDate().toLocalDate().equals(LocalDate.of(2026, 7, 15)));
+            assertNull(calendarAdvanceOutput.getResultZonedDate());
+
             logger.info("forwardCalendarDayClosedAfterPolicy OK ");
         } catch (Exception e) {
             logger.error("testForwardCalendarDayClosedAfterPolicy", e);
@@ -367,16 +441,25 @@ public class TestDayCalendar {
         calendarInput.businessCalendar = null;
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
-            logger.info("forwardCalendarDayClosedBeforePolicy Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]",
-                    output.foundDate,
-                    output.resultDate.toLocalDate(),
-                    output.resultZonedDate,
-                    output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
+            assert (calendarAdvanceOutput.listResultDates.size() == 1);
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.listResultDates) {
 
-            assertTrue(output.foundDate);
-            assert (output.resultDate.toLocalDate().equals(LocalDate.of(2026, 7, 10)));
-            assertNull(output.resultZonedDate);
+                logger.info("forwardCalendarDayClosedBeforePolicy Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]",
+                        result.foundDate,
+                        result.resultDate.toLocalDate(),
+                        result.resultZonedDate,
+                        result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+
+                assertTrue(result.foundDate);
+                assert (result.resultDate.toLocalDate().equals(LocalDate.of(2026, 7, 10)));
+                assertNull(result.resultZonedDate);
+            }
+            // Check that result are correct set too
+            assertTrue(calendarAdvanceOutput.isFoundDate());
+            assert (calendarAdvanceOutput.getResultDate().toLocalDate().equals(LocalDate.of(2026, 7, 10)));
+            assertNull(calendarAdvanceOutput.getResultZonedDate());
+
             logger.info("forwardCalendarDayClosedBeforePolicy OK ");
         } catch (Exception e) {
             logger.error("forwardCalendarDayClosedBeforePolicy", e);
@@ -404,16 +487,24 @@ public class TestDayCalendar {
         calendarInput.businessCalendar = null;
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
-            logger.info("forwardCalendarDayClosedResultPolicy Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]",
-                    output.foundDate,
-                    output.resultDate.toLocalDate(),
-                    output.resultZonedDate,
-                    output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
+            assert (calendarAdvanceOutput.listResultDates.size() == 1);
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.listResultDates) {
+                logger.info("forwardCalendarDayClosedResultPolicy Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]",
+                        result.foundDate,
+                        result.resultDate.toLocalDate(),
+                        result.resultZonedDate,
+                        result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
 
-            assertTrue(output.foundDate);
-            assert (output.resultDate.toLocalDate().equals(LocalDate.of(2026, 7, 12)));
-            assertNull(output.resultZonedDate);
+                assertTrue(result.foundDate);
+                assert (result.resultDate.toLocalDate().equals(LocalDate.of(2026, 7, 12)));
+                assertNull(result.resultZonedDate);
+            }
+            // Check that result are correct set too
+            assertTrue(calendarAdvanceOutput.isFoundDate());
+            assert (calendarAdvanceOutput.getResultDate().toLocalDate().equals(LocalDate.of(2026, 7, 12)));
+            assertNull(calendarAdvanceOutput.getResultZonedDate());
+
             logger.info("forwardCalendarDayClosedResultPolicy OK ");
         } catch (Exception e) {
             logger.error("forwardCalendarDayClosedResultPolicy", e);
@@ -440,15 +531,23 @@ public class TestDayCalendar {
         calendarInput.businessCalendar = null;
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
-            logger.info("backWeekBusinessDay Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]",
-                    output.foundDate,
-                    output.resultDate.toLocalDate(),
-                    output.resultZonedDate,
-                    output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
-            assertTrue(output.foundDate);
-            assert (output.resultDate.toLocalDate().equals(LocalDate.of(2026, 7, 8)));
-            assertNull(output.resultZonedDate);
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
+            assert (calendarAdvanceOutput.listResultDates.size() == 1);
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.listResultDates) {
+                logger.info("backWeekBusinessDay Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]",
+                        result.foundDate,
+                        result.resultDate.toLocalDate(),
+                        result.resultZonedDate,
+                        result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+                assertTrue(result.foundDate);
+                assert (result.resultDate.toLocalDate().equals(LocalDate.of(2026, 7, 8)));
+                assertNull(result.resultZonedDate);
+            }
+            // Check that result are correct set too
+            assertTrue(calendarAdvanceOutput.isFoundDate());
+            assert (calendarAdvanceOutput.getResultDate().toLocalDate().equals(LocalDate.of(2026, 7, 8)));
+            assertNull(calendarAdvanceOutput.getResultZonedDate());
+
             logger.info("backWeekBusinessDay OK ");
         } catch (Exception e) {
             logger.error("backWeekBusinessDay", e);
@@ -475,15 +574,23 @@ public class TestDayCalendar {
         calendarInput.businessCalendar = null;
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
-            logger.info("backWeekBusinessDay Result FoundDate:{} resultDate[{}] resultZonedDate[{}], periods[{}]",
-                    output.foundDate,
-                    output.resultDate.toLocalDate(),
-                    output.resultZonedDate,
-                    output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
-            assertTrue(output.foundDate);
-            assert (output.resultDate.toLocalDate().equals(LocalDate.of(2026, 7, 22)));
-            assertNull(output.resultZonedDate);
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
+            assert (calendarAdvanceOutput.listResultDates.size() == 1);
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.listResultDates) {
+                logger.info("backWeekBusinessDay Result FoundDate:{} resultDate[{}] resultZonedDate[{}], periods[{}]",
+                        result.foundDate,
+                        result.resultDate.toLocalDate(),
+                        result.resultZonedDate,
+                        result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+                assertTrue(result.foundDate);
+                assert (result.resultDate.toLocalDate().equals(LocalDate.of(2026, 7, 22)));
+                assertNull(result.resultZonedDate);
+            }
+            // Check that result are correct set too
+            assertTrue(calendarAdvanceOutput.isFoundDate());
+            assert (calendarAdvanceOutput.getResultDate().toLocalDate().equals(LocalDate.of(2026, 7, 22)));
+            assertNull(calendarAdvanceOutput.getResultZonedDate());
+
             logger.info("backWeekBusinessDay OK ");
         } catch (Exception e) {
             logger.error("backWeekBusinessDay", e);

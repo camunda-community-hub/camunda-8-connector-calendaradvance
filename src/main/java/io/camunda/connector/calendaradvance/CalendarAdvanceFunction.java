@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
         CalendarAdvanceInput.CALENDARADVANCEFUNCTION,
         CalendarAdvanceInput.START_DATE,
         CalendarAdvanceInput.DURATION,
+        CalendarAdvanceInput.DURATIONS,
         CalendarAdvanceInput.DIRECTION,
         CalendarAdvanceInput.BUSINESS_CALENDAR,
         CalendarAdvanceInput.BUSINESS_TIMEZONE,
@@ -104,14 +105,32 @@ public class CalendarAdvanceFunction implements OutboundConnectorFunction, Cherr
         return CalendarAdvanceOutput.class;
     }
 
+    @Override
+    public List<String> getAppliesTo() {
+        return null;
+    }
+
+    @Override
+    public String getElementType() {
+        return null;
+    }
+
     /**
      * Only task at this moment (no InboundConnector)
      *
      * @return list of items where the function applies
      */
+
+
+
     @Override
-    public List<String> getAppliesTo() {
-        return List.of("bpmn:ServiceTask");
+    public int getVersion() {
+        return 1;
+    }
+
+    @Override
+    public String getRelease() {
+        return "1.1.0";
     }
 
     /**

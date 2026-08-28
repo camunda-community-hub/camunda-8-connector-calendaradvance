@@ -38,4 +38,7 @@ public class CalendarAdvanceError {
     public static final String ERROR_INAPPROPRIATE_DURATION = "ERROR_INAPROPRIATE_DURATION";
     public static final String ERROR_INAPROPRIATE_DURATION_EXPLANATION = "Witb BusinessDay progression, duration must not be in months or years, but in days";
 
+    public static final String ERROR_BAD_COUNTRYCODE = "ERROR_BAD_COUNTRYCODE";
+    public static final String ERROR_BAD_COUNTRYCODE_EXPLANATION = "A country code must be exactly 2 alphanumeric characters";
+
 }

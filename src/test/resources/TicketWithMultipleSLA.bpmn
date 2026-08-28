@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1sh6jho" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.49.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.8.0">
-  <bpmn:process id="Process_TicketWithSLA" name="TicketWithSLA" isExecutable="true">
+  <bpmn:process id="Process_TicketWithMultipleSLA" name="TicketWithMultipleSLA" isExecutable="true">
     <bpmn:startEvent id="StartEvent_1" name="Create ticket">
       <bpmn:outgoing>Flow_176nkxe</bpmn:outgoing>
     </bpmn:startEvent>
@@ -12,7 +12,7 @@
     <bpmn:sequenceFlow id="Flow_1tmjzct" sourceRef="Activity_0rtns34" targetRef="Activity_01s73yg" />
     <bpmn:scriptTask id="Activity_1dh3nkb" name="Get SLA for customer">
       <bpmn:extensionElements>
-        <zeebe:script expression="=&#34;PT40H&#34;" resultVariable="SLAInHours" />
+        <zeebe:script expression="=[&#34;PT40H&#34;, &#34;PT12H&#34;, &#34;PT1H30M&#34;]" resultVariable="SLAInHours" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_176nkxe</bpmn:incoming>
       <bpmn:outgoing>Flow_1h09dju</bpmn:outgoing>
@@ -23,21 +23,23 @@
         <zeebe:ioMapping>
           <zeebe:input source="advance-hours" target="calendarAdvanceFunction" />
           <zeebe:input source="=now()" target="startDate" />
-          <zeebe:input source="=SLAInHours" target="duration" />
+          <zeebe:input target="duration" />
+          <zeebe:input source="=SLAInHours" target="durations" />
           <zeebe:input source="forward" target="direction" />
           <zeebe:input source="false" target="businessCalendar_optional" />
           <zeebe:input source="true" target="useHolidays" />
           <zeebe:input source="=[&#34;US&#34;, &#34;FR&#34;]" target="holidaysCountries" />
           <zeebe:input target="businessTimeZone" />
-          <zeebe:input source="true" target="foundDate_optional" />
-          <zeebe:input source="true" target="resultDate_optional" />
+          <zeebe:input source="false" target="foundDate_optional" />
+          <zeebe:input source="false" target="resultDate_optional" />
           <zeebe:input source="false" target="listPeriods_optional" />
+          <zeebe:input source="true" target="listResultDates_optional" />
           <zeebe:input source="false" target="resultZonedDate_optional" />
-          <zeebe:output source="= result.foundDate" target="slaValue.foundDate" />
-          <zeebe:output source="= result.resultDate" target="slaValue.slaDate" />
+          <zeebe:output source="= result.listResultDates" target="listResultDates" />
         </zeebe:ioMapping>
         <zeebe:taskHeaders>
           <zeebe:header key="resultVariable" value="result" />
+          <zeebe:header key="resultExpression" value="={sla: {&#10;  &#34;dueDate&#34;: response.listResultDates[1].resultDate,&#10;  &#34;reminder&#34;: response.listResultDates[2].resultDate&#10;  }&#10;}" />
           <zeebe:header key="errorExpression" value="if is defined(error) then bpmnError(error.code, error.message) else null" />
         </zeebe:taskHeaders>
       </bpmn:extensionElements>
@@ -75,7 +77,7 @@
     <bpmn:association id="Association_0fbr1lx" associationDirection="None" sourceRef="Activity_0rtns34" targetRef="TextAnnotation_10thyb3" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_TicketWithSLA">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_TicketWithMultipleSLA">
       <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
         <dc:Bounds x="182" y="222" width="36" height="36" />
         <bpmndi:BPMNLabel>

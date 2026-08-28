@@ -46,10 +46,13 @@ public class TestLocalTimeCalendar {
             // Friday 16: 2:26 = 146
             // Monday 19 : holiday in the US
             // Tuesday 20:  360-146=214 mn => 09:00+214mn (3h34) =12:34
-            logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}]", output.foundDate, output.resultDate, output.resultZonedDate);
-            assertTrue(output.foundDate);
-            assertEquals(LocalDateTime.of(2026, 1, 20, 12, 34), output.resultDate);
-            assertNull(output.resultZonedDate);
+            assert (output.listResultDates.size() == 1);
+            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
+                logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}]", result.foundDate, result.resultDate, result.resultZonedDate);
+                assertTrue(result.foundDate);
+                assertEquals(LocalDateTime.of(2026, 1, 20, 12, 34), result.resultDate);
+                assertNull(result.resultZonedDate);
+            }
             logger.info("testHourForwardHoliday OK ");
         } catch (Exception e) {
             logger.error("testHourAdvanceHoliday", e);
@@ -75,15 +78,19 @@ public class TestLocalTimeCalendar {
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
             CalendarAdvanceOutput output = calendarFunction.execute(context);
-            logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}]", output.foundDate, output.resultDate, output.resultZonedDate);
-            // Duration: 730 mn
-            // Wednesday 15: 94mn
-            // Tuesday 14 : holiday
-            // Monday 13:  9h=> 540
-            // Friday 10: 96 mn => 18:00-96=16:24
-            assertTrue(output.foundDate);
-            assert (output.resultDate.truncatedTo(ChronoUnit.MINUTES).equals(LocalDateTime.of(2026, 7, 10, 16, 24)));
-            assertNull(output.resultZonedDate);
+            assert (output.listResultDates.size() == 1);
+            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
+
+                logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}]", result.foundDate, result.resultDate, result.resultZonedDate);
+                // Duration: 730 mn
+                // Wednesday 15: 94mn
+                // Tuesday 14 : holiday
+                // Monday 13:  9h=> 540
+                // Friday 10: 96 mn => 18:00-96=16:24
+                assertTrue(result.foundDate);
+                assert (result.resultDate.truncatedTo(ChronoUnit.MINUTES).equals(LocalDateTime.of(2026, 7, 10, 16, 24)));
+                assertNull(result.resultZonedDate);
+            }
             logger.info("testHourBackwardHoliday OK ");
         } catch (Exception e) {
             logger.error("testHourBackwardHoliday", e);
@@ -115,14 +122,16 @@ public class TestLocalTimeCalendar {
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
             CalendarAdvanceOutput output = calendarFunction.execute(context);
+            assert (output.listResultDates.size() == 1);
+            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
 
-            logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]", output.foundDate, output.resultDate, output.resultZonedDate,
-                    output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
-            // Duration: 730 mn
-            // Wednesday 15: 94mn
-            // Tuesday 14 : holiday
-            // Monday 13:  9h=> 540
-            // Friday 10: 96 mn => 18:00-96=16:24
+                logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]", result.foundDate, result.resultDate, result.resultZonedDate,
+                        result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+                // Duration: 730 mn
+                // Wednesday 15: 94mn
+                // Tuesday 14 : holiday
+                // Monday 13:  9h=> 540
+                // Friday 10: 96 mn => 18:00-96=16:24
             /*
                     |Day         |Use                                              |Relicat                        |
                     |-------------|--------------------------------------------------|--------------------------------|
@@ -136,9 +145,10 @@ public class TestLocalTimeCalendar {
                     |             |14:10:00-18:00:00=230mn                       |230>96:09:00+90mn=10:30|
 
              */
-            assertTrue(output.foundDate);
-            assert (output.resultDate.truncatedTo(ChronoUnit.MINUTES).equals(LocalDateTime.of(2026, 3, 31, 15, 40)));
-            assertNull(output.resultZonedDate);
+                assertTrue(result.foundDate);
+                assert (result.resultDate.truncatedTo(ChronoUnit.MINUTES).equals(LocalDateTime.of(2026, 3, 31, 15, 40)));
+                assertNull(result.resultZonedDate);
+            }
             logger.info("testHourMultipleSlots OK ");
         } catch (Exception e) {
             logger.error("testHourAdvanceHoliday", e);
@@ -170,14 +180,16 @@ public class TestLocalTimeCalendar {
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
             CalendarAdvanceOutput output = calendarFunction.execute(context);
+            assert (output.listResultDates.size() == 1);
+            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
 
-            logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]", output.foundDate, output.resultDate, output.resultZonedDate,
-                    output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
-            // Duration: 730 mn
-            // Wednesday 15: 94mn
-            // Tuesday 14 : holiday
-            // Monday 13:  9h=> 540
-            // Friday 10: 96 mn => 18:00-96=16:24
+                logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]", result.foundDate, result.resultDate, result.resultZonedDate,
+                        result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+                // Duration: 730 mn
+                // Wednesday 15: 94mn
+                // Tuesday 14 : holiday
+                // Monday 13:  9h=> 540
+                // Friday 10: 96 mn => 18:00-96=16:24
             /*
                     |Day         |Use                                              |Relicat                        |
                     |-------------|--------------------------------------------------|--------------------------------|
@@ -191,9 +203,10 @@ public class TestLocalTimeCalendar {
                     |             |14:10:00-18:00:00=230mn                       |230>96:09:00+90mn=10:30|
 
              */
-            assertTrue(output.foundDate);
-            assert (output.resultDate.truncatedTo(ChronoUnit.MINUTES).equals(LocalDateTime.of(2026, 3, 26, 11, 58)));
-            assertNull(output.resultZonedDate);
+                assertTrue(result.foundDate);
+                assert (result.resultDate.truncatedTo(ChronoUnit.MINUTES).equals(LocalDateTime.of(2026, 3, 26, 11, 58)));
+                assertNull(result.resultZonedDate);
+            }
             logger.info("testHourMultipleSlotsReverse OK ");
         } catch (Exception e) {
             logger.error("testHourMultipleSlotsReverse", e);
@@ -219,14 +232,17 @@ public class TestLocalTimeCalendar {
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
             CalendarAdvanceOutput output = calendarFunction.execute(context);
+            assert (output.listResultDates.size() == 1);
+            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
 
-            logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]", output.foundDate, output.resultDate, output.resultZonedDate,
-                    output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+                logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]", result.foundDate, result.resultDate, result.resultZonedDate,
+                        result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
 
-            assertTrue(output.foundDate);
-            assert (output.resultDate.truncatedTo(ChronoUnit.MINUTES).equals(LocalDateTime.of(2026, 7, 15, 15, 5)));
-            assertNull(output.resultZonedDate);
-            logger.info("testHourOverTwoHolidays OK ");
+                assertTrue(result.foundDate);
+                assert (result.resultDate.truncatedTo(ChronoUnit.MINUTES).equals(LocalDateTime.of(2026, 7, 15, 15, 5)));
+                assertNull(result.resultZonedDate);
+                logger.info("testHourOverTwoHolidays OK ");
+            }
         } catch (Exception e) {
             logger.error("testHourAdvanceHoliday", e);
             assert false;
@@ -252,13 +268,16 @@ public class TestLocalTimeCalendar {
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
             CalendarAdvanceOutput output = calendarFunction.execute(context);
+            assert (output.listResultDates.size() == 1);
+            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
 
-            logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]", output.foundDate, output.resultDate, output.resultZonedDate,
-                    output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+                logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]", result.foundDate, result.resultDate, result.resultZonedDate,
+                        result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
 
-            assertTrue(output.foundDate);
-            assert (output.resultDate.truncatedTo(ChronoUnit.MINUTES).equals(LocalDateTime.of(2027, 1, 4, 11, 9)));
-            assertNull(output.resultZonedDate);
+                assertTrue(result.foundDate);
+                assert (result.resultDate.truncatedTo(ChronoUnit.MINUTES).equals(LocalDateTime.of(2027, 1, 4, 11, 9)));
+                assertNull(result.resultZonedDate);
+            }
             logger.info("testNewYear OK ");
         } catch (Exception e) {
             logger.error("testHourAdvanceHoliday", e);
@@ -287,13 +306,16 @@ public class TestLocalTimeCalendar {
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
             CalendarAdvanceOutput output = calendarFunction.execute(context);
+            assert (output.listResultDates.size() == 1);
+            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
 
-            logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]", output.foundDate, output.resultDate, output.resultZonedDate,
-                    output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+                logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]", result.foundDate, result.resultDate, result.resultZonedDate,
+                        result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
 
-            assertTrue(output.foundDate);
-            assert (output.resultDate.truncatedTo(ChronoUnit.MINUTES).equals(LocalDateTime.of(2026, 9, 21, 13, 54)));
-            assertNull(output.resultZonedDate);
+                assertTrue(result.foundDate);
+                assert (result.resultDate.truncatedTo(ChronoUnit.MINUTES).equals(LocalDateTime.of(2026, 9, 21, 13, 54)));
+                assertNull(result.resultZonedDate);
+            }
             logger.info("test247 OK ");
         } catch (Exception e) {
             logger.error("test247", e);
@@ -319,13 +341,16 @@ public class TestLocalTimeCalendar {
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
             CalendarAdvanceOutput output = calendarFunction.execute(context);
+            assert (output.listResultDates.size() == 1);
+            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
 
-            logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]", output.foundDate, output.resultDate, output.resultZonedDate,
-                    output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+                logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]", result.foundDate, result.resultDate, result.resultZonedDate,
+                        result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
 
-            assertTrue(output.foundDate);
-            assert (output.resultDate.truncatedTo(ChronoUnit.MINUTES).equals(LocalDateTime.of(2026, 9, 9, 13, 54)));
-            assertNull(output.resultZonedDate);
+                assertTrue(result.foundDate);
+                assert (result.resultDate.truncatedTo(ChronoUnit.MINUTES).equals(LocalDateTime.of(2026, 9, 9, 13, 54)));
+                assertNull(result.resultZonedDate);
+            }
             logger.info("test247Reverse OK ");
         } catch (Exception e) {
             logger.error("test247Reverse", e);
@@ -358,13 +383,16 @@ public class TestLocalTimeCalendar {
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
             CalendarAdvanceOutput output = calendarFunction.execute(context);
+            assert (output.listResultDates.size() == 1);
+            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
 
-            logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]", output.foundDate, output.resultDate, output.resultZonedDate,
-                    output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+                logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]", result.foundDate, result.resultDate, result.resultZonedDate,
+                        result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
 
-            assertTrue(output.foundDate);
-            assert (output.resultDate.truncatedTo(ChronoUnit.MINUTES).equals(LocalDateTime.of(2026, 5, 19, 11, 48)));
-            assertNull(output.resultZonedDate);
+                assertTrue(result.foundDate);
+                assert (result.resultDate.truncatedTo(ChronoUnit.MINUTES).equals(LocalDateTime.of(2026, 5, 19, 11, 48)));
+                assertNull(result.resultZonedDate);
+            }
             logger.info("testSpecificDate OK ");
         } catch (Exception e) {
             logger.error("testSpecificDate", e);
@@ -399,13 +427,16 @@ public class TestLocalTimeCalendar {
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
             CalendarAdvanceOutput output = calendarFunction.execute(context);
+            assert (output.listResultDates.size() == 1);
+            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
 
-            logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]", output.foundDate, output.resultDate, output.resultZonedDate,
-                    output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+                logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]", result.foundDate, result.resultDate, result.resultZonedDate,
+                        result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
 
-            assertTrue(output.foundDate);
-            assert (output.resultDate.truncatedTo(ChronoUnit.MINUTES).equals(LocalDateTime.of(2026, 5, 19, 17, 0)));
-            assertNull(output.resultZonedDate);
+                assertTrue(result.foundDate);
+                assert (result.resultDate.truncatedTo(ChronoUnit.MINUTES).equals(LocalDateTime.of(2026, 5, 19, 17, 0)));
+                assertNull(result.resultZonedDate);
+            }
             logger.info("testSpecificDate OK ");
         } catch (Exception e) {
             logger.error("testSpecificDate", e);
@@ -439,13 +470,16 @@ public class TestLocalTimeCalendar {
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
             CalendarAdvanceOutput output = calendarFunction.execute(context);
+            assert (output.listResultDates.size() == 1);
+            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
 
-            logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]", output.foundDate, output.resultDate, output.resultZonedDate,
-                    output.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+                logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]", result.foundDate, result.resultDate, result.resultZonedDate,
+                        result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
 
-            assertTrue(output.foundDate);
-            assert (output.resultDate.truncatedTo(ChronoUnit.MINUTES).equals(LocalDateTime.of(2026, 5, 19, 13, 48)));
-            assertNull(output.resultZonedDate);
+                assertTrue(result.foundDate);
+                assert (result.resultDate.truncatedTo(ChronoUnit.MINUTES).equals(LocalDateTime.of(2026, 5, 19, 13, 48)));
+                assertNull(result.resultZonedDate);
+            }
             logger.info("testSpecificDate OK ");
         } catch (Exception e) {
             logger.error("testSpecificDate", e);

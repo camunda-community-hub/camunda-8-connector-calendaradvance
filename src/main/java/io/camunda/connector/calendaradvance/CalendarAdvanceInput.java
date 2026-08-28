@@ -43,6 +43,7 @@ public class CalendarAdvanceInput implements CherryInput {
 
 
     public static final String DURATION = "duration";
+    public static final String DURATIONS = "durations";
     public static final String DAY_PROGRESSION = "dayProgression";
     public static final String DAY_PROGRESSION_V_BUSINESSDAY = "businessday";
     public static final String DAY_PROGRESSION_V_CALENDARDAY = "calendarday";
@@ -64,8 +65,17 @@ public class CalendarAdvanceInput implements CherryInput {
             // name
             "Duration", // label
             String.class, // class
-            RunnerParameter.Level.REQUIRED, // level
-            "Duration ISO 8601 : P2DT5H23M54S. When a Month or Year is given with CalendarDay, then it step by this duration");
+            RunnerParameter.Level.OPTIONAL, // level
+            "Duration ISO 8601 : P2DT5H23M54S. When a Month or Year is given with CalendarDay, then it step by this duration")
+            .setVisibleInTemplate();
+    public static final RunnerParameter parameterDurations = new RunnerParameter(
+            CalendarAdvanceInput.DURATIONS,
+            // name
+            "DurationS", // label
+            List.class, // class
+            RunnerParameter.Level.OPTIONAL, // level
+            "List of Durations ISO 8601 : P2DT5H23M54S. When a Month or Year is given with CalendarDay, then it step by this duration")
+            .setVisibleInTemplate();
 
     public static final RunnerParameter parameterDirection = new RunnerParameter(
             CalendarAdvanceInput.DIRECTION,
@@ -133,7 +143,11 @@ public class CalendarAdvanceInput implements CherryInput {
     public boolean useBusinessDays;
 
     public List<String> businessCalendar;
+    /*
+    It can ba a String ("PT10H") or a List<String>
+     */
     public String duration;
+    public List durations;
     public String direction;
     public Object startDate;
     public boolean useHolidays;
@@ -165,15 +179,16 @@ public class CalendarAdvanceInput implements CherryInput {
      *
      * @return the type of period detected
      */
-    public TYPEPERIOD getTypePeriod() {
-        if (getPrivateDuration() != null) {
+    public TYPEPERIOD getTypePeriod(int position) {
+        if (getPrivateDuration(position, false) != null) {
             return TYPEPERIOD.TIME;
         }
         // We already try to get the duration, so now just interesting of Period
-        Period period = getPrivatePeriod(true);
+        Period period = getPrivatePeriod(true, position);
         if (period == null) {
             logger.error("Bad duration [{}]: not ISO8601", duration);
-            throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Duration[" + getInputDuration() + "] is not ISO8601");
+            throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Duration[" + getInputDuration(position) + "] is not ISO8601"
+                    + (getNumberOfDuration()>1? "position ["+position+"]":""));
         }
         if (period.getMonths() > 0)
             return TYPEPERIOD.MONTH;
@@ -189,21 +204,28 @@ public class CalendarAdvanceInput implements CherryInput {
      * @return the duration, exception if the duration can't be calculated
      * @throws ConnectorException in case the duration can't be get
      */
-    public long getDurationInMinutes() throws ConnectorException {
-        if (getPrivateDuration() == null) {
-            logger.error("Duration[{}] is not valid", getInputDuration());
-            throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Duration[" + getInputDuration() + "] is not valid");
+    public long getDurationInMinutes( int position) throws ConnectorException {
+        if (getPrivateDuration(position, true) == null) {
+            logger.error("Duration[{}] is not valid", getInputDuration(position));
+            throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Duration[" + getInputDuration(position) + "] is not valid");
         }
-        return getPrivateDuration().toMinutes();
+        return getPrivateDuration(position, true).toMinutes();
     }
 
-    public long getDurationInDays() throws ConnectorException {
+    public int getNumberOfDuration() {
+        if (durations !=null && ! durations.isEmpty())
+            return durations.size();
+        return 1;
+    }
+
+    public long getDurationInDays(int position) throws ConnectorException {
         // if this is a duration, we will manage it first. So we can get the period just based on days
-        Period period = getPrivatePeriod(true);
-        Duration duration = getPrivateDuration();
+        Period period = getPrivatePeriod(true, position);
+        Duration duration = getPrivateDuration( position, false);
         if (period == null && duration == null) {
-            logger.error("Duration[{}] is not ISO8601", getInputDuration());
-            throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Duration[" + getInputDuration() + "] is not ISO8601");
+            logger.error("Duration[{}] is not ISO8601", getInputDuration( position ));
+            throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Duration[" + getInputDuration(position) + "] is not ISO8601 "
+                    + (getNumberOfDuration()>1? "position ["+position+"]":""));
         }
         if (duration != null)
             return duration.toDays();
@@ -215,8 +237,8 @@ public class CalendarAdvanceInput implements CherryInput {
         return period.getDays();
     }
 
-    public Period getPeriod() throws ConnectorException {
-        Period period = getPrivatePeriod(true);
+    public Period getPeriod(int position) throws ConnectorException {
+        Period period = getPrivatePeriod(true, position);
         if (period == null) {
             logger.error("Bad period. Duration[" + duration + "] is not ISO8601");
             throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Duration[" + duration + "] is not ISO8601");
@@ -225,14 +247,14 @@ public class CalendarAdvanceInput implements CherryInput {
     }
 
 
-    public long getDurationInMonths() throws ConnectorException {
-        Period period = getPrivatePeriod(true);
+    public long getDurationInMonths(int position) throws ConnectorException {
+        Period period = getPrivatePeriod(true, position);
         if (period == null) {
-            logger.error("Duration[{}] is not ISO8601", getInputDuration());
+            logger.error("Duration[{}] is not ISO8601", getInputDuration(position));
             throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Duration[" + duration + "] is not ISO8601");
         }
         if (period.getMonths() == 0 || period.getYears() == 0) {
-            logger.error("Duration[{}] does not contains months", getInputDuration());
+            logger.error("Duration[{}] does not contains months", getInputDuration(position));
             throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Duration[" + duration + "] does not contains Months");
         }
         return period.getMonths() + period.getYears() * 12;
@@ -241,40 +263,54 @@ public class CalendarAdvanceInput implements CherryInput {
     /**
      * return the duration in years
      */
-    public long getDurationInYears() throws ConnectorException {
-        Period period = getPrivatePeriod(true);
+    public long getDurationInYears(int position) throws ConnectorException {
+        Period period = getPrivatePeriod(true, position);
         if (period == null) {
-            logger.error("Duration[{}] is not ISO8601", getInputDuration());
+            logger.error("Duration[{}] is not ISO8601", getInputDuration(position));
             throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Duration[" + duration + "] is not ISO8601");
         }
         if (period.getYears() == 0) {
-            logger.error("Duration[{}] does not contains years", getInputDuration());
+            logger.error("Duration[{}] does not contains years", getInputDuration(position));
             throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Duration[" + duration + "] is not in year");
         }
         return period.getYears();
     }
 
 
-    public String getInputDuration() {
+    public String getInputDuration(int position) {
+        if (durations!=null && ! durations.isEmpty()) {
+            if (position >= durations.size() || durations.get(position)==null) {
+                logger.error("getInputDuration position[{] when durations.size()=[{}] : duration [{}] durations[{}]",
+                        position, durations.size(), durations, durations);
+                return null;
+            }
+            return durations.get(position).toString();
+        }
         return duration;
     }
 
-    private Duration getPrivateDuration() {
+    private Duration getPrivateDuration( int position, boolean logAsError ) {
         try {
-            return Duration.parse(duration);
+            return Duration.parse( getInputDuration(position));
         } catch (DateTimeParseException e) {
+            if (logAsError)
+                logger.error("Can't parse duration [{}] position [{}]. Durations:[{}] duration[{}]: ",
+                        getInputDuration(position), position, durations, duration, e );
             return null;
         }
     }
 
-    private Period getPrivatePeriod(boolean justDays) {
+    private Period getPrivatePeriod(boolean justDays, int position) {
         try {
-            String[] parts = duration.split("T");
+            String durationPosition = getInputDuration(position);
+            String[] parts = durationPosition.split("T");
             if (justDays)
                 return Period.parse(parts[0]);
             else
-                return Period.parse(duration);
+                return Period.parse(durationPosition);
         } catch (DateTimeParseException e) {
+            logger.error("Can't parse Period [{}] position [{}]. Durations:[{}] duration[{}]: ",
+                    getInputDuration(position), position, durations, duration, e );
             return null;
         }
     }
@@ -415,7 +451,7 @@ public class CalendarAdvanceInput implements CherryInput {
 
         } catch (Exception e) {
             logger.error("Error getting STARTDATE [{}]", startDate, e);
-            throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_STARTDATE, "Error getting reference date from["+startDate+"] : "+ e.getMessage());
+            throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_STARTDATE, "Error getting reference date from[" + startDate + "] : " + e.getMessage());
         }
 
     }

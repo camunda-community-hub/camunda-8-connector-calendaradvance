@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface SubFunction {
-    CalendarAdvanceOutput executeSubFunction(CalendarAdvanceInput pdfInput, OutboundConnectorContext context) throws ConnectorException;
+    CalendarAdvanceOutput executeSubFunction(CalendarAdvanceInput calendarAdvanceInput, OutboundConnectorContext context) throws ConnectorException;
 
     String getSubFunctionName();
 

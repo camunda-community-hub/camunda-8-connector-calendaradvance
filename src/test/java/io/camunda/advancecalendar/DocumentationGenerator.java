@@ -40,7 +40,7 @@ public class DocumentationGenerator {
         try (BufferedWriter writer = Files.newBufferedWriter(Path.of(folder + fileName))) {
             logger.info("Generating {}/{}", folder, fileName);
 
-            SdkRunnerCherryConnector cherryConnector = new SdkRunnerCherryConnector(calendarAdvanceFunction);
+            SdkRunnerCherryConnector cherryConnector = new SdkRunnerCherryConnector(calendarAdvanceFunction, null);
             writeLine(writer, "# " + cherryConnector.getDisplayLabel());
             if (cherryConnector.getLogo() != null) {
                 writeLine(writer, "[Description](data:image/png;base64," + cherryConnector.getLogo() + ")");

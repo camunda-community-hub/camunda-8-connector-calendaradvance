@@ -8,6 +8,19 @@ package io.camunda.connector.cherrytemplate;
 /*  This interface is not required by Cherry, but it is the method      */
 /*  searched by the framework to collect additional information on      */
 /*  the connector                                                       */
+/*                                                                      */
+/*  Note: the class must use the @OutboundConnector annotation, so      */
+/*  name and type is available on this annotation.                      */
+/*  Input variable may be available in the annotation, but it's not     */
+/*  enough for Cherry, which needs more information (dropdown?          */
+/*  Condition?                                                          */
+/*                                                                      */
+/*  Example:                                                            */
+/*  @OutboundConnector(name = "PdfFunction",                             */
+/*         inputVariables = { PdfInput.INPUT_SOURCE_FILE},              */
+/*         type = "c-pdf-function")                                     */
+/*                                                                      */
+/* public class MyFunction implements OutboundConnectorFunction, CherryConnector */
 /* ******************************************************************** */
 
 import java.util.List;
@@ -65,4 +78,10 @@ public interface CherryConnector {
      * @return list of bpmn item
      */
     List<String> getAppliesTo();
+
+    String getElementType();
+
+    int getVersion();
+
+    String getRelease();
 }
