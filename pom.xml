@@ -18,6 +18,19 @@
         <developerConnection>scm:git:git@github.com:camunda-community-hub/camunda-8-connector-calendaradvance.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
+    <!-- Push the library to Maven -->
+    <!-- Visit https://github.com/camunda-community-hub/community-action-maven-release -->
+    <!-- This parent defines the profiles/plugins the release action needs (community-action-maven-release,
+         camunda-repository, central-sonatype-publish, ...) and distributionManagement.
+         Spring Boot's own version management is imported as a BOM below instead of as <parent>,
+         since Maven only allows a single <parent>. -->
+    <parent>
+        <groupId>org.camunda.community</groupId>
+        <artifactId>community-hub-release-parent</artifactId>
+        <version>2.1.0</version>
+        <relativePath/>
+    </parent>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -28,6 +41,7 @@
         <version.connector>8.8.7</version.connector>
         <version.chemistry>1.1.0</version.chemistry>
 
+        <version.spring-boot>3.4.4</version.spring-boot>
 
         <version.opensagres>2.0.4</version.opensagres>
         <version.filestorage>2.5.0</version.filestorage>
@@ -43,15 +57,6 @@
         <maven.compiler.target>23</maven.compiler.target>
         <maven.compiler.release>23</maven.compiler.release>
     </properties>
-
-    <!-- Push the library to Maven -->
-    <!-- Visit https://github.com/camunda-community-hub/community-action-maven-release -->
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.4</version> <!-- Example: set your intended version -->
-    </parent>
-
 
     <dependencies>
         <dependency>
@@ -137,6 +142,13 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${version.spring-boot}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>io.camunda</groupId>
                 <artifactId>camunda-bom</artifactId>
