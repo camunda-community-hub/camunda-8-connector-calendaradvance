@@ -10,7 +10,14 @@
     <!-- 1.0.0 -->
     <!-- 1.1.0 Accept as Duration input a String or a list of String -->
     <version>1.1.0</version>
+    <url>https://github.com/camunda-community-hub/camunda-8-connector-calendaradvance</url>
 
+    <scm>
+        <url>https://github.com/camunda-community-hub/camunda-8-connector-calendaradvance</url>
+        <connection>scm:git:git@github.com:camunda-community-hub/camunda-8-connector-calendaradvance.git</connection>
+        <developerConnection>scm:git:git@github.com:camunda-community-hub/camunda-8-connector-calendaradvance.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -122,7 +129,7 @@
         <dependency>
             <groupId>io.camunda.community</groupId>
             <artifactId>zeebe-cherry-runtime</artifactId>
-            <version>3.5.0</version>
+            <version>3.5.2</version>
             <scope>test</scope>
         </dependency>
 
