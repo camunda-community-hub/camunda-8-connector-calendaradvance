@@ -41,7 +41,7 @@
         <version.connector>8.8.7</version.connector>
         <version.chemistry>1.1.0</version.chemistry>
 
-        <version.spring-boot>3.4.4</version.spring-boot>
+        <version.spring-boot>4.1.1</version.spring-boot>
 
         <version.opensagres>2.0.4</version.opensagres>
         <version.filestorage>2.5.0</version.filestorage>
