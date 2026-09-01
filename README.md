@@ -611,7 +611,7 @@ connectors:
         - "-L"
         - "-o"
         - "/opt/custom/calendar-advance-function-1.0.0.jar"
-        - "https://github.com/camunda-community-hub/camunda-8-connector-calendaradvance/releases/download/1.0.0/calendar-advance-function-1.0.0.jar"
+        - "https://github.com/camunda-community-hub/camunda-8-connector-calendaradvance/releases/download/1.1.0/calendar-advance-function-1.1.0.jar"
       volumeMounts:
         - name: custom-connectors
           mountPath: /opt/custom
@@ -635,3 +635,29 @@ Clone the repository and build your own image using the `k8s` folder: [README.md
 Include the JAR file directly in your own application. Two JARs are published:
 * `calendar-advance-function-<version>.jar` — the plain JAR, without embedded dependencies (use this if your application already provides Spring Boot and the Camunda connector runtime)
 * `calendar-advance-function-<version>-with-dependencies.jar` — a self-contained JAR bundling all dependencies (use this for a standalone deployment, e.g. with the connector runtime's `initContainers` method above)
+
+The jar is publish on JFrog artifactory under
+
+https://artifacts.camunda.com/ui/repos/tree/General/camunda-consulting/io/camunda/connector/calendar-advance-function/1.1.0/calendar-advance-function-1.1.0-with-dependencies.jar
+
+Add this in your pom.xml:
+
+````
+  <dependencies>
+    <dependency>
+            <groupId>io.camunda.connector</groupId>
+            <artifactId>calendar-advance-function</artifactId>
+            <version>1.1.0</version>
+        </dependency>
+  </dependencies>
+
+
+  <repositories>
+    <!-- Hosts calendar-advance-function until it's published to Maven Central. -->
+    <repository>
+        <id>camunda-consulting</id>
+        <name>Camunda Consulting Repository</name>
+        <url>https://artifacts.camunda.com/artifactory/camunda-consulting/</url>
+    </repository>
+  </repositories> 
+````

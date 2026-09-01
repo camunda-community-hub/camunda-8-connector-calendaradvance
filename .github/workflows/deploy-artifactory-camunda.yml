@@ -1,5 +1,9 @@
 name: deploy-artifactory-camunda
 
+# This GitHub workflow is temporary, to deploy the Jar on Jfro Artifacty here
+# https://artifacts.camunda.com/ui/repos/tree/General/camunda-consulting/io/camunda/connector/calendar-advance-function/1.1.0/calendar-advance-function-1.1.0-with-dependencies.jar
+# When the project will be referenced on the Camunda-hub, it will be deploy on Maven
+
 on:
   push:
     paths:
