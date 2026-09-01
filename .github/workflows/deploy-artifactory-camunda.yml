@@ -1,0 +1,38 @@
+name: deploy-artifactory-camunda
+
+on:
+  push:
+    paths:
+      - '.github/workflows/deploy-artifactory-camunda.yml'
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '23'
+          distribution: 'temurin'
+          cache: maven
+          # Writes a <server id="camunda-nexus"> entry into settings.xml whose
+          # username/password are resolved from these env var names at build time
+          # (matches the "camunda-nexus" server id used by community-hub-release-parent's
+          # camunda-repository profile / distributionManagement).
+          server-id: camunda-nexus
+          server-username: ARTIFACTORY_USR
+          server-password: ARTIFACTORY_TOKEN
+
+      - name: Set version from release tag
+        if: github.event_name == 'release'
+        run: mvn -B versions:set -DnewVersion=${{ github.event.release.tag_name }} -DgenerateBackupPoms=false
+
+      - name: Deploy to Camunda Artifactory
+        run: mvn -B -P camunda-repository -DskipTests deploy
+        env:
+          ARTIFACTORY_USR: ${{ secrets.ARTIFACTORY_USR }}
+          ARTIFACTORY_TOKEN: ${{ secrets.ARTIFACTORY_TOKEN }}
