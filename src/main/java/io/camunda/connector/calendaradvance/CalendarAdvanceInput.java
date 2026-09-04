@@ -11,9 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.*;
 import java.time.format.DateTimeParseException;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * the JsonIgnoreProperties is mandatory: the template may contain additional widget to help the designer, especially on the OPTIONAL parameters
@@ -72,9 +70,9 @@ public class CalendarAdvanceInput implements CherryInput {
             CalendarAdvanceInput.DURATIONS,
             // name
             "DurationS", // label
-            List.class, // class
+            Object.class, // class
             RunnerParameter.Level.OPTIONAL, // level
-            "List of Durations ISO 8601 : P2DT5H23M54S. When a Month or Year is given with CalendarDay, then it step by this duration")
+            "ISO 8601 List [\"P2DT5H23M54S\", \"PT23H\"] or Map {\"INNER\": \"P2DT5H23M54S\", \"DUEDATE\": \"PT24\"}  of Durations")
             .setVisibleInTemplate();
 
     public static final RunnerParameter parameterDirection = new RunnerParameter(
@@ -147,7 +145,7 @@ public class CalendarAdvanceInput implements CherryInput {
     It can ba a String ("PT10H") or a List<String>
      */
     public String duration;
-    public List durations;
+    public Object durations;
     public String direction;
     public Object startDate;
     public boolean useHolidays;
@@ -179,7 +177,7 @@ public class CalendarAdvanceInput implements CherryInput {
      *
      * @return the type of period detected
      */
-    public TYPEPERIOD getTypePeriod(int position) {
+    public TYPEPERIOD getTypePeriod(String position) {
         if (getPrivateDuration(position, false) != null) {
             return TYPEPERIOD.TIME;
         }
@@ -188,7 +186,7 @@ public class CalendarAdvanceInput implements CherryInput {
         if (period == null) {
             logger.error("Bad duration [{}]: not ISO8601", duration);
             throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Duration[" + getInputDuration(position) + "] is not ISO8601"
-                    + (getNumberOfDuration()>1? "position ["+position+"]":""));
+                    + (isDurations() ? "position [" + position + "]" : ""));
         }
         if (period.getMonths() > 0)
             return TYPEPERIOD.MONTH;
@@ -204,7 +202,7 @@ public class CalendarAdvanceInput implements CherryInput {
      * @return the duration, exception if the duration can't be calculated
      * @throws ConnectorException in case the duration can't be get
      */
-    public long getDurationInMinutes( int position) throws ConnectorException {
+    public long getDurationInMinutes(String position) throws ConnectorException {
         if (getPrivateDuration(position, true) == null) {
             logger.error("Duration[{}] is not valid", getInputDuration(position));
             throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Duration[" + getInputDuration(position) + "] is not valid");
@@ -212,20 +210,50 @@ public class CalendarAdvanceInput implements CherryInput {
         return getPrivateDuration(position, true).toMinutes();
     }
 
-    public int getNumberOfDuration() {
-        if (durations !=null && ! durations.isEmpty())
-            return durations.size();
-        return 1;
+    /**
+     * return true is the input is multiple durations
+     * @return
+     */
+    public boolean isDurations() {
+        if (durations == null)
+            return false;
+        if (durations instanceof List durationsList) {
+            if (durationsList.isEmpty())
+                return false;
+        }
+        if (durations instanceof Map durationsMap) {
+            if (durationsMap.isEmpty())
+                return false;
+        }
+        return true;
     }
 
-    public long getDurationInDays(int position) throws ConnectorException {
+    /**
+     * return the list of all durations. If this is not a list, return "1", as a convention to search on "duration" and not in the list
+     * @return
+     */
+    public Set<String> getPositionDurations() {
+        Set<String> allPositionDurations = new HashSet<>();
+        if (durations instanceof List durationsList) {
+            for (int i = 0; i < durationsList.size(); i++) {
+                allPositionDurations.add(String.valueOf(i));
+            }
+            return allPositionDurations;
+        }
+        if (durations instanceof Map durationsMap) {
+            return durationsMap.keySet();
+        }
+        return Set.of("1");
+    }
+
+    public long getDurationInDays(String position) throws ConnectorException {
         // if this is a duration, we will manage it first. So we can get the period just based on days
         Period period = getPrivatePeriod(true, position);
-        Duration duration = getPrivateDuration( position, false);
+        Duration duration = getPrivateDuration(position, false);
         if (period == null && duration == null) {
-            logger.error("Duration[{}] is not ISO8601", getInputDuration( position ));
+            logger.error("Duration[{}] is not ISO8601", getInputDuration(position));
             throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Duration[" + getInputDuration(position) + "] is not ISO8601 "
-                    + (getNumberOfDuration()>1? "position ["+position+"]":""));
+                    + (isDurations() ? "position [" + position + "]" : ""));
         }
         if (duration != null)
             return duration.toDays();
@@ -237,7 +265,7 @@ public class CalendarAdvanceInput implements CherryInput {
         return period.getDays();
     }
 
-    public Period getPeriod(int position) throws ConnectorException {
+    public Period getPeriod(String position) throws ConnectorException {
         Period period = getPrivatePeriod(true, position);
         if (period == null) {
             logger.error("Bad period. Duration[" + duration + "] is not ISO8601");
@@ -247,7 +275,7 @@ public class CalendarAdvanceInput implements CherryInput {
     }
 
 
-    public long getDurationInMonths(int position) throws ConnectorException {
+    public long getDurationInMonths(String position) throws ConnectorException {
         Period period = getPrivatePeriod(true, position);
         if (period == null) {
             logger.error("Duration[{}] is not ISO8601", getInputDuration(position));
@@ -263,7 +291,7 @@ public class CalendarAdvanceInput implements CherryInput {
     /**
      * return the duration in years
      */
-    public long getDurationInYears(int position) throws ConnectorException {
+    public long getDurationInYears(String position) throws ConnectorException {
         Period period = getPrivatePeriod(true, position);
         if (period == null) {
             logger.error("Duration[{}] is not ISO8601", getInputDuration(position));
@@ -277,30 +305,49 @@ public class CalendarAdvanceInput implements CherryInput {
     }
 
 
-    public String getInputDuration(int position) {
-        if (durations!=null && ! durations.isEmpty()) {
-            if (position >= durations.size() || durations.get(position)==null) {
+    public boolean isDurationAMap() {
+        if (durations != null && durations instanceof Map)
+            return true;
+        return false;
+    }
+
+    /**
+     * duration can be a LIST or a MAP.
+     * If it is a list, then position can be changed to an Integer and get as range. In a Map, we get the map value
+     *
+     * @param position
+     * @return
+     */
+    public String getInputDuration(String position) {
+        if (!isDurations())
+            return duration;
+        if (durations instanceof List durationsList) {
+            int positionInt = Integer.parseInt(position);
+            if (positionInt >= durationsList.size() || durationsList.get(positionInt) == null) {
                 logger.error("getInputDuration position[{] when durations.size()=[{}] : duration [{}] durations[{}]",
-                        position, durations.size(), durations, durations);
+                        position, durationsList.size(), durations, durations);
                 return null;
             }
-            return durations.get(position).toString();
+            return durationsList.get(positionInt).toString();
+        }
+        if (durations instanceof Map durationsMap) {
+            return durationsMap.get(position).toString();
         }
         return duration;
     }
 
-    private Duration getPrivateDuration( int position, boolean logAsError ) {
+    private Duration getPrivateDuration(String position, boolean logAsError) {
         try {
-            return Duration.parse( getInputDuration(position));
+            return Duration.parse(getInputDuration(position));
         } catch (DateTimeParseException e) {
             if (logAsError)
                 logger.error("Can't parse duration [{}] position [{}]. Durations:[{}] duration[{}]: ",
-                        getInputDuration(position), position, durations, duration, e );
+                        getInputDuration(position), position, durations, duration, e);
             return null;
         }
     }
 
-    private Period getPrivatePeriod(boolean justDays, int position) {
+    private Period getPrivatePeriod(boolean justDays, String position) {
         try {
             String durationPosition = getInputDuration(position);
             String[] parts = durationPosition.split("T");
@@ -310,7 +357,7 @@ public class CalendarAdvanceInput implements CherryInput {
                 return Period.parse(durationPosition);
         } catch (DateTimeParseException e) {
             logger.error("Can't parse Period [{}] position [{}]. Durations:[{}] duration[{}]: ",
-                    getInputDuration(position), position, durations, duration, e );
+                    getInputDuration(position), position, durations, duration, e);
             return null;
         }
     }

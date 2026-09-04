@@ -41,13 +41,15 @@ public class TestLocalTimeCalendar {
         calendarInput.businessCalendar = null;
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
             // Duration: 360 mn
             // Friday 16: 2:26 = 146
             // Monday 19 : holiday in the US
             // Tuesday 20:  360-146=214 mn => 09:00+214mn (3h34) =12:34
-            assert (output.listResultDates.size() == 1);
-            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
+            assert (calendarAdvanceOutput.getNumberOfResultDate() == 1);
+            checkOneResultCoherence(calendarAdvanceOutput);
+
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.getListResultDateCollection()) {
                 logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}]", result.foundDate, result.resultDate, result.resultZonedDate);
                 assertTrue(result.foundDate);
                 assertEquals(LocalDateTime.of(2026, 1, 20, 12, 34), result.resultDate);
@@ -77,9 +79,11 @@ public class TestLocalTimeCalendar {
         calendarInput.businessCalendar = null;
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
-            assert (output.listResultDates.size() == 1);
-            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
+            assert (calendarAdvanceOutput.getNumberOfResultDate() == 1);
+            checkOneResultCoherence(calendarAdvanceOutput);
+
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.getListResultDateCollection()) {
 
                 logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}]", result.foundDate, result.resultDate, result.resultZonedDate);
                 // Duration: 730 mn
@@ -121,9 +125,10 @@ public class TestLocalTimeCalendar {
 
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
-            assert (output.listResultDates.size() == 1);
-            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
+            assert (calendarAdvanceOutput.getNumberOfResultDate() == 1);
+            checkOneResultCoherence(calendarAdvanceOutput);
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.getListResultDateCollection()) {
 
                 logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]", result.foundDate, result.resultDate, result.resultZonedDate,
                         result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
@@ -179,12 +184,15 @@ public class TestLocalTimeCalendar {
 
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
-            assert (output.listResultDates.size() == 1);
-            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
+            assert (calendarAdvanceOutput.getNumberOfResultDate() == 1);
+            checkOneResultCoherence( calendarAdvanceOutput );
+
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.getListResultDateCollection()) {
 
                 logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]", result.foundDate, result.resultDate, result.resultZonedDate,
                         result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
+
                 // Duration: 730 mn
                 // Wednesday 15: 94mn
                 // Tuesday 14 : holiday
@@ -231,9 +239,10 @@ public class TestLocalTimeCalendar {
         calendarInput.businessCalendar = null;
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
-            assert (output.listResultDates.size() == 1);
-            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
+            assert (calendarAdvanceOutput.getNumberOfResultDate() == 1);
+            checkOneResultCoherence(calendarAdvanceOutput);
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.getListResultDateCollection()) {
 
                 logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]", result.foundDate, result.resultDate, result.resultZonedDate,
                         result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
@@ -267,9 +276,10 @@ public class TestLocalTimeCalendar {
 
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
-            assert (output.listResultDates.size() == 1);
-            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
+            assert (calendarAdvanceOutput.getNumberOfResultDate() == 1);
+            checkOneResultCoherence(calendarAdvanceOutput);
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.getListResultDateCollection()) {
 
                 logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]", result.foundDate, result.resultDate, result.resultZonedDate,
                         result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
@@ -305,9 +315,11 @@ public class TestLocalTimeCalendar {
 
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
-            assert (output.listResultDates.size() == 1);
-            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
+            assert (calendarAdvanceOutput.getNumberOfResultDate() == 1);
+            checkOneResultCoherence(calendarAdvanceOutput);
+
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.getListResultDateCollection()) {
 
                 logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]", result.foundDate, result.resultDate, result.resultZonedDate,
                         result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
@@ -340,9 +352,10 @@ public class TestLocalTimeCalendar {
 
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
-            assert (output.listResultDates.size() == 1);
-            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
+            assert (calendarAdvanceOutput.getNumberOfResultDate() == 1);
+            checkOneResultCoherence(calendarAdvanceOutput);
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.getListResultDateCollection()) {
 
                 logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]", result.foundDate, result.resultDate, result.resultZonedDate,
                         result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
@@ -382,9 +395,11 @@ public class TestLocalTimeCalendar {
 
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
-            assert (output.listResultDates.size() == 1);
-            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
+            assert (calendarAdvanceOutput.getNumberOfResultDate() == 1);
+            checkOneResultCoherence(calendarAdvanceOutput);
+
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.getListResultDateCollection()) {
 
                 logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]", result.foundDate, result.resultDate, result.resultZonedDate,
                         result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
@@ -426,9 +441,11 @@ public class TestLocalTimeCalendar {
 
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
-            assert (output.listResultDates.size() == 1);
-            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
+            assert (calendarAdvanceOutput.getNumberOfResultDate() == 1);
+            checkOneResultCoherence(calendarAdvanceOutput);
+
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.getListResultDateCollection()) {
 
                 logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]", result.foundDate, result.resultDate, result.resultZonedDate,
                         result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
@@ -469,9 +486,11 @@ public class TestLocalTimeCalendar {
 
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
-            assert (output.listResultDates.size() == 1);
-            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
+            assert (calendarAdvanceOutput.getNumberOfResultDate() == 1);
+            checkOneResultCoherence(calendarAdvanceOutput);
+
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.getListResultDateCollection()) {
 
                 logger.info("Result FoundDate:{} resultDate[{}] resultZonedDate[{}] Periods[{}]", result.foundDate, result.resultDate, result.resultZonedDate,
                         result.listPeriods.stream().map(Object::toString).collect(Collectors.joining(", ")));
@@ -487,4 +506,13 @@ public class TestLocalTimeCalendar {
         }
     }
 
+    private void checkOneResultCoherence( CalendarAdvanceOutput calendarAdvanceOutput ) {
+        assert(calendarAdvanceOutput.getNumberOfResultDate() == 1);
+        CalendarAdvanceOutput.Result firstPositionResult = calendarAdvanceOutput.getListResultDate("0");
+        CalendarAdvanceOutput.Result firstCollectionResult = calendarAdvanceOutput.getListResultDateCollection().iterator().next();
+        assertEquals( firstCollectionResult.foundDate,firstCollectionResult.foundDate);
+        assertEquals( firstCollectionResult.resultDate,firstCollectionResult.resultDate);
+        assertEquals( firstCollectionResult.resultZonedDate,firstCollectionResult.resultZonedDate);
+        assertEquals( firstCollectionResult.listPeriods,firstCollectionResult.listPeriods);
+    }
 }

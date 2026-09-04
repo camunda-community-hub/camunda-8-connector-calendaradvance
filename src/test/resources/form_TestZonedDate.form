@@ -1,0 +1,36 @@
+{
+  "components": [
+    {
+      "text": "# Due date",
+      "type": "text",
+      "layout": {
+        "row": "Row_06obip9",
+        "columns": null
+      },
+      "id": "Field_16zywd0"
+    },
+    {
+      "subtype": "datetime",
+      "dateLabel": "Date",
+      "type": "datetime",
+      "layout": {
+        "row": "Row_1i2u0sg",
+        "columns": null
+      },
+      "id": "Field_04z8h4g",
+      "key": "slaValue.slaZonedDate",
+      "timeLabel": "Time",
+      "timeSerializingFormat": "utc_offset",
+      "timeInterval": 15
+    }
+  ],
+  "type": "default",
+  "id": "Form_TestZonedDate",
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.9.0",
+  "exporter": {
+    "name": "Camunda Modeler",
+    "version": "5.49.0"
+  },
+  "schemaVersion": 19
+}

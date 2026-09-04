@@ -40,9 +40,9 @@ public class TestYearMonthCalendar {
         calendarInput.businessCalendar = null;
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
-            assert (output.listResultDates.size() == 1);
-            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
+            assert (calendarAdvanceOutput.getNumberOfResultDate() == 1);
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.getListResultDateCollection()) {
                 logger.info("forwardMonthCalendarDay Result FoundDate:{} resultDate[{}] resultZonedDate[{}] periods[{}]",
                         result.foundDate,
                         result.resultDate.toLocalDate(),
@@ -79,9 +79,9 @@ public class TestYearMonthCalendar {
         calendarInput.businessCalendar = null;
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
-            assert (output.listResultDates.size() == 1);
-            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
+            assert (calendarAdvanceOutput.getNumberOfResultDate() == 1);
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.getListResultDateCollection()) {
                 logger.info("backwardYearCalendarDay Result FoundDate:{} resultDate[{}] resultZonedDate[{}] periods[{}]",
                         result.foundDate,
                         result.resultDate.toLocalDate(),
@@ -117,9 +117,9 @@ public class TestYearMonthCalendar {
         calendarInput.businessCalendar = null;
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
-            assert (output.listResultDates.size() == 1);
-            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
+            assert (calendarAdvanceOutput.getNumberOfResultDate() == 1);
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.getListResultDateCollection()) {
 
                 logger.info("forwardMonthAndDaysCalendarDay Result FoundDate:{} resultDate[{}] resultZonedDate[{}] periods[{}]",
                         result.foundDate,
@@ -155,9 +155,9 @@ public class TestYearMonthCalendar {
         calendarInput.businessCalendar = null;
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
-            assert (output.listResultDates.size() == 1);
-            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
+            assert (calendarAdvanceOutput.getNumberOfResultDate() == 1);
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.getListResultDateCollection()) {
                 logger.info("forwardMonthAndDaysCalendarDay Result FoundDate:{} resultDate[{}] resultZonedDate[{}] periods[{}]",
                         result.foundDate,
                         result.resultDate.toLocalDate(),

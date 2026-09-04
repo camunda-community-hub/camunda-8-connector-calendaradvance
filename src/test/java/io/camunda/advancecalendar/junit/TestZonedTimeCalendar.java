@@ -46,9 +46,9 @@ public class TestZonedTimeCalendar {
         calendarInput.businessCalendar = List.of("24/7"); // only way to calculate the result
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
-            assert (output.listResultDates.size() == 1);
-            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
+            assert (calendarAdvanceOutput.getNumberOfResultDate() == 1);
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.getListResultDateCollection()) {
 
                 logger.info("Result FoundDate:{} resultDate[{}] sourceZoneDate[{}] resultZonedDate[{}] Periods[{}]", result.foundDate, result.resultDate,
                         calendarInput.startDate,
@@ -62,6 +62,10 @@ public class TestZonedTimeCalendar {
 
                 assert (result.resultZonedDate.toInstant().toEpochMilli() == nowPlus50Zoned.toInstant().toEpochMilli());
                 assert (result.resultDate.equals(nowPlus50Local));
+
+                assert (calendarAdvanceOutput.getResultZonedDate().toInstant().toEpochMilli() == nowPlus50Zoned.toInstant().toEpochMilli());
+                assert (calendarAdvanceOutput.getResultDate().equals(nowPlus50Local));
+
             }
 
             logger.info("testNowPlus50 OK ");
@@ -88,9 +92,9 @@ public class TestZonedTimeCalendar {
         calendarInput.businessCalendar = SlotContainer.CALENDAR_24_7; // only way to calculate the result
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
-            assert (output.listResultDates.size() == 1);
-            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
+            assert (calendarAdvanceOutput.getNumberOfResultDate() == 1);
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.getListResultDateCollection()) {
 
                 logger.info("nowPlus3dLocal: Result FoundDate:{} resultDate[{}] sourceZoneDate[{}] resultZonedDate[{}] Periods[{}]", result.foundDate, result.resultDate,
                         calendarInput.startDate,
@@ -135,9 +139,9 @@ public class TestZonedTimeCalendar {
 
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
-            assert (output.listResultDates.size() == 1);
-            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
+            assert (calendarAdvanceOutput.getNumberOfResultDate() == 1);
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.getListResultDateCollection()) {
 
                 logger.info("testNewYorkLosAngeles: Result FoundDate:{} resultDate[{}] sourceZoneDate[{}] resultZonedDate[{}] Periods[{}]", result.foundDate, result.resultDate,
                         calendarInput.startDate,
@@ -187,9 +191,9 @@ public class TestZonedTimeCalendar {
 
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {
-            CalendarAdvanceOutput output = calendarFunction.execute(context);
-            assert (output.listResultDates.size() == 1);
-            for (CalendarAdvanceOutput.Result result : output.listResultDates) {
+            CalendarAdvanceOutput calendarAdvanceOutput = calendarFunction.execute(context);
+            assert (calendarAdvanceOutput.getNumberOfResultDate() == 1);
+            for (CalendarAdvanceOutput.Result result : calendarAdvanceOutput.getListResultDateCollection()) {
 
                 logger.info("testDenverNewYork: Result FoundDate:{} resultDate[{}] sourceZoneDate[{}] resultZonedDate[{}] Periods[{}]", result.foundDate, result.resultDate,
                         calendarInput.startDate,

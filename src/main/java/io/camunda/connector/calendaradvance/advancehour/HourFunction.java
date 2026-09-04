@@ -46,7 +46,7 @@ public class HourFunction implements SubFunction {
             ValidateInput.validateInput(calendarInput, true);
 
             // Now start the calculation
-            CalendarAdvanceOutput calendarOutput = new CalendarAdvanceOutput();
+            CalendarAdvanceOutput calendarOutput = new CalendarAdvanceOutput(calendarInput.isDurationAMap());
 
             SlotContainer slotContainer = new SlotContainer();
             slotContainer.setSlots(calendarInput.getBusinessCalendar());
@@ -59,7 +59,7 @@ public class HourFunction implements SubFunction {
             LocalDateTime cursor = calendarInput.getCalculatedStartDateLocalDateTime();
 
 
-            for (int position = 0; position < calendarInput.getNumberOfDuration(); position++) {
+            for (String position: calendarInput.getPositionDurations()) {
                 long durationInMinutes = calendarInput.getDurationInMinutes(position);
 
                 for (int i = 0; i < 1000; i++) {
@@ -71,7 +71,7 @@ public class HourFunction implements SubFunction {
 
                     if (!advanceResult.foundPeriod) {
                         // This is the end here!
-                        calendarOutput.addResult(false, null, null, null);
+                        calendarOutput.addResult(position, false, null, null, null);
                         return calendarOutput;
                     }
                     // reduce the duration by the period
@@ -125,7 +125,7 @@ public class HourFunction implements SubFunction {
 
                     zonedDateTime = zdt == null ? null : zdt.toInstant().atOffset(calendarInput.getCalculatedStartDateZoneOffset()).toZonedDateTime();
                 }
-                calendarOutput.addResult(true, cursor, zonedDateTime, listPeriods);
+                calendarOutput.addResult(position, true, cursor, zonedDateTime, listPeriods);
                 logger.info("HourFunction: Start[{}] Duration[{} mn] ResultLocalDateTime[{}] ResultZonedDateTime[{}]",
                         calendarInput.getCalculatedStartDateLocalDateTime(),
                         durationInMinutes,

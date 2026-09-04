@@ -44,7 +44,7 @@ public class DayFunction implements SubFunction {
             ValidateInput.validateInput(calendarInput, true);
 
             // Now start the calculation
-            CalendarAdvanceOutput calendarOutput = new CalendarAdvanceOutput();
+            CalendarAdvanceOutput calendarOutput = new CalendarAdvanceOutput( calendarInput.isDurationAMap());
 
             SlotContainer slotContainer = new SlotContainer();
             slotContainer.setSlots(calendarInput.getBusinessCalendar());
@@ -52,7 +52,7 @@ public class DayFunction implements SubFunction {
 
             AdvanceDayResult advanceDayResult;
 
-            for (int position = 0; position < calendarInput.getNumberOfDuration(); position++) {
+            for (String position : calendarInput.getPositionDurations()) {
                 // If the period is Month or Year, then we must move the Advance Calenday By BusinessDay
                 CalendarAdvanceInput.TYPEPERIOD type = calendarInput.getTypePeriod(position);
                 boolean isMonthYearPeriod = CalendarAdvanceInput.TYPEPERIOD.YEAR.equals(type)
@@ -78,7 +78,7 @@ public class DayFunction implements SubFunction {
                 }
                 if (!advanceDayResult.foundDate) {
                     // This is the end here!
-                    calendarOutput.addResult(false, null, null, null);
+                    calendarOutput.addResult(position, false, null, null, null);
                     return calendarOutput;
                 }
                 List<SlotContainer.Period> listPeriods = advanceDayResult.listPeriods;
@@ -89,7 +89,7 @@ public class DayFunction implements SubFunction {
                         || isMonthYearPeriod) {
                     AdvanceDayResult advanceResultAdjust = adjustTarget(calendarInput, advanceDayResult.resultLocalDate);
                     if (!advanceResultAdjust.foundDate) {
-                        calendarOutput.addResult(false, null, null, null);
+                        calendarOutput.addResult(position, false, null, null, null);
                         return calendarOutput;
                     }
                     listPeriods = Stream.of(advanceDayResult.listPeriods, advanceResultAdjust.listPeriods)
@@ -97,7 +97,7 @@ public class DayFunction implements SubFunction {
                             .toList();
                     resultDate = advanceResultAdjust.resultLocalDate.atStartOfDay();
                 }
-                calendarOutput.addResult(true, resultDate, null, listPeriods);
+                calendarOutput.addResult(position, true, resultDate, null, listPeriods);
 
             }
 
@@ -174,7 +174,7 @@ public class DayFunction implements SubFunction {
      * @return the advanceResult, which contains the period and the result
      * @throws ConnectorException for any error
      */
-    private AdvanceDayResult advanceCalendarByDay(CalendarAdvanceInput calendarInput, int position) throws ConnectorException {
+    private AdvanceDayResult advanceCalendarByDay(CalendarAdvanceInput calendarInput, String position) throws ConnectorException {
         LocalDate cursor = calendarInput.getReferenceDateLocalDate();
         CalendarAdvanceInput.TYPEPERIOD type = calendarInput.getTypePeriod(position);
 
@@ -236,7 +236,7 @@ public class DayFunction implements SubFunction {
      * @return the advanceResult, which contains the period and the result
      * @throws ConnectorException in case of error
      */
-    private AdvanceDayResult advanceCalendarByBusinessDay(CalendarAdvanceInput calendarInput, int position) throws
+    private AdvanceDayResult advanceCalendarByBusinessDay(CalendarAdvanceInput calendarInput, String position) throws
             ConnectorException {
 
         AdvanceDayResult dayResult = new AdvanceDayResult();
