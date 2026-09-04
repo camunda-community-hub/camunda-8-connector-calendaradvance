@@ -636,9 +636,13 @@ Include the JAR file directly in your own application. Two JARs are published:
 * `calendar-advance-function-<version>.jar` — the plain JAR, without embedded dependencies (use this if your application already provides Spring Boot and the Camunda connector runtime)
 * `calendar-advance-function-<version>-with-dependencies.jar` — a self-contained JAR bundling all dependencies (use this for a standalone deployment, e.g. with the connector runtime's `initContainers` method above)
 
-The jar is publish on JFrog artifactory under
+Jar is publish on maven central
+https://central.sonatype.com/artifact/io.camunda.connector/calendar-advance-function
 
-https://artifacts.camunda.com/ui/repos/tree/General/camunda-consulting/io/camunda/connector/calendar-advance-function/1.1.0/calendar-advance-function-1.1.0-with-dependencies.jar
+
+The jar is published on JFrog artifactory under
+
+https://artifacts.camunda.com/ui/repos/tree/General/camunda-consulting/io/camunda/connector/calendar-advance-function
 
 Add this in your pom.xml:
 
