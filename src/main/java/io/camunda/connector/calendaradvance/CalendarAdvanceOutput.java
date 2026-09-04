@@ -46,6 +46,10 @@ public class CalendarAdvanceOutput implements CherryOutput {
      */
     public Object listResultDates;
 
+    public CalendarAdvanceOutput() {
+        listResultDates = new ArrayList<>();
+    }
+
 
     public CalendarAdvanceOutput(boolean resultIsAMap) {
         if (resultIsAMap)
