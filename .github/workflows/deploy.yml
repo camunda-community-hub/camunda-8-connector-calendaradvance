@@ -3,9 +3,9 @@ on:
   push:
     paths:
       - '.github/workflows/deploy.yml'
-
   release:
     types: [published]
+
 jobs:
   publish:
     runs-on: ubuntu-latest
