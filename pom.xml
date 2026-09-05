@@ -155,19 +155,6 @@
         </dependencies>
     </dependencyManagement>
 
-    <!-- Overrides community-hub-release-parent's distributionManagement (which targets
-         camunda-bpm-community-extensions) to deploy to camunda-consulting instead. -->
-    <distributionManagement>
-        <repository>
-            <id>camunda-consulting</id>
-            <url>https://artifacts.camunda.com/artifactory/camunda-consulting/</url>
-        </repository>
-        <snapshotRepository>
-            <id>camunda-consulting-snapshots</id>
-            <url>https://artifacts.camunda.com/artifactory/camunda-consulting-snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <build>
         <resources>
             <resource>
@@ -204,19 +191,43 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.2</version>
             </plugin>
-            <!-- community-hub-release-parent skips this plugin by default (releases normally go
-                 through its camunda-repository/central-sonatype-publish profiles instead).
-                 Re-enabled here for the plain "deploy to camunda-consulting" path above. -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <configuration>
-                    <skip>false</skip>
-                </configuration>
-            </plugin>
-
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Personal/manual deploy path to Camunda's camunda-consulting Artifactory repo,
+             using the current user's own personal Artifactory token instead of the
+             community-hub's shared release credentials. Activate explicitly with
+             -P camunda-consulting; without it, distributionManagement and the
+             maven-deploy-plugin skip both fall back to community-hub-release-parent's
+             defaults (used by the Maven Central / camunda-bpm-community-extensions path). -->
+        <profile>
+            <id>camunda-consulting</id>
+            <distributionManagement>
+                <repository>
+                    <id>camunda-consulting</id>
+                    <url>https://artifacts.camunda.com/artifactory/camunda-consulting/</url>
+                </repository>
+                <snapshotRepository>
+                    <id>camunda-consulting-snapshots</id>
+                    <url>https://artifacts.camunda.com/artifactory/camunda-consulting-snapshots/</url>
+                </snapshotRepository>
+            </distributionManagement>
+            <build>
+                <plugins>
+                    <!-- community-hub-release-parent skips this plugin by default (releases normally go
+                         through its camunda-repository/central-sonatype-publish profiles instead). -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <configuration>
+                            <skip>false</skip>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <repositories>
         <repository>

@@ -36,7 +36,7 @@ jobs:
         run: mvn -B versions:set -DnewVersion=${{ github.event.release.tag_name }} -DgenerateBackupPoms=false
 
       - name: Deploy to Camunda Artifactory (camunda-consulting)
-        run: mvn -B -DskipTests deploy
+        run: mvn -B -P camunda-consulting -DskipTests deploy
         env:
           ARTIFACTORY_USR: ${{ secrets.ARTIFACTORY_USR }}
           ARTIFACTORY_TOKEN: ${{ secrets.ARTIFACTORY_TOKEN }}
