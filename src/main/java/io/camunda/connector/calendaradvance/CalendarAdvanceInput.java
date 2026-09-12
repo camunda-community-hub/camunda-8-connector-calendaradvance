@@ -336,7 +336,7 @@ public class CalendarAdvanceInput implements CherryInput {
         return duration;
     }
 
-    private Duration getPrivateDuration(String position, boolean logAsError) {
+    public Duration getPrivateDuration(String position, boolean logAsError) {
         try {
             return Duration.parse(getInputDuration(position));
         } catch (DateTimeParseException e) {
@@ -439,70 +439,95 @@ public class CalendarAdvanceInput implements CherryInput {
         return ParameterToolbox.getInputParameters();
     }
 
+    private String explanationStartDateCalculation ="";
     public void calculateReferenceDateLocalDateTime() {
         try {
+            explanationStartDateCalculation = "StartDate["+startDate+"] ";
             calculatedInputStartDateZoneOffset = null;
             if (startDate == null) {
+                explanationStartDateCalculation +="null";
                 calculatedInputLocalDateTime = null;
                 return;
             }
 
             if (startDate instanceof LocalDate referenceDateLocalDate) {
+                explanationStartDateCalculation +="LocalDate-use atStartofDay";
                 calculatedInputLocalDateTime = referenceDateLocalDate.atStartOfDay();
                 return;
             }
 
             // ---------- Specific type LocalDateTime
             if (startDate instanceof LocalDateTime startDateLocalDateTime) {
+                explanationStartDateCalculation +="LocalDateTime use businessIdZone["+getBusinessZoneId()+"] ";
                 calculatedFromLocalDateTime(startDateLocalDateTime);
+                explanationStartDateCalculation +="LocalDateTime["+calculatedInputLocalDateTime+"]";
                 return;
             }
             // ----------- Specific type ZonedDateTime
             if (startDate instanceof ZonedDateTime startDateZonedDateTime) {
+                explanationStartDateCalculation +="ZonedDateTime zoneId["+startDateZonedDateTime.getOffset().toString()+"] Move to BusinessIdZone["+getBusinessZoneId()+"] ";
                 calculatedFromZonedDateTime(startDateZonedDateTime);
+                explanationStartDateCalculation +="LocalDateTime["+calculatedInputLocalDateTime+"]";
                 return;
             }
             if (startDate instanceof OffsetDateTime startDateOffsetDateTime) {
+                explanationStartDateCalculation +="OffsetDateTime use businessIdZone["+getBusinessZoneId()+"] ";
                 calculatedFromOffsetDateTime(startDateOffsetDateTime);
+                explanationStartDateCalculation +="LocalDateTime["+calculatedInputLocalDateTime+"] calculatedInputStartDateZoneOffset["+calculatedInputStartDateZoneOffset+"]";
                 return;
             }
             // String
             String startDateString = startDate.toString();
+            explanationStartDateCalculation +="String, ";
             // String offsetDateTime
             if (startDateString.endsWith("Z") || startDateString.matches(".*[+-]\\d{2}:\\d{2}$")) {
                 OffsetDateTime odt = OffsetDateTime.parse(startDateString);
+                explanationStartDateCalculation +="WithOffset["+odt+"] ";
                 calculatedFromOffsetDateTime(odt);
+                explanationStartDateCalculation +="LocalDateTime["+calculatedInputLocalDateTime+"] calculatedInputStartDateZoneOffset["+calculatedInputStartDateZoneOffset+"]";
                 return;
             }
             // String ZonedDateTime
             try {
+
                 ZonedDateTime zdt = ZonedDateTime.parse(startDateString);
+                explanationStartDateCalculation +="ZonedDateTime["+zdt+"] ";
                 calculatedFromZonedDateTime(zdt);
+                explanationStartDateCalculation +="LocalDateTime["+calculatedInputLocalDateTime+"] businessIdZone["+getBusinessZoneId()+"] StartDateOffset["+calculatedInputStartDateZoneOffset+"]";
                 return;
             } catch (DateTimeParseException e) {
                 // do nothing,
+                explanationStartDateCalculation +="DateTimeParseException, ";
             }
 
 
             // no timezone in input → LocalDateTime
             try {
                 LocalDateTime ldt = LocalDateTime.parse(startDateString);
+                explanationStartDateCalculation +="LocalDateTime["+ldt+"] ";
                 calculatedFromLocalDateTime(ldt);
+                explanationStartDateCalculation +="LocalDateTime["+calculatedInputLocalDateTime+"] businessIdZone["+getBusinessZoneId()+"]";
                 return;
             } catch (DateTimeParseException e) {
+                explanationStartDateCalculation +="DateTimeParseException, ";
                 // do nothing
             }
 
             LocalDate date = LocalDate.parse(startDateString);
+            explanationStartDateCalculation +="LocalDate["+date+"] ";
             calculatedInputLocalDateTime = date.atStartOfDay();
-
+            explanationStartDateCalculation +="LocalDateTime["+calculatedInputLocalDateTime+"]";
         } catch (Exception e) {
+            explanationStartDateCalculation +="Exception"+e.getMessage();
             logger.error("Error getting STARTDATE [{}]", startDate, e);
             throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_STARTDATE, "Error getting reference date from[" + startDate + "] : " + e.getMessage());
         }
 
     }
 
+    public String getExplanationStartDateCalculation() {
+        return explanationStartDateCalculation;
+    }
     /* ******************************************************************** */
     /*                                                                      */
     /*  calculate Reference Date                                            */
@@ -532,7 +557,6 @@ public class CalendarAdvanceInput implements CherryInput {
             ZonedDateTime calendarTime = startDatezdt.withZoneSameInstant(businessCalendarZoneId);
             calculatedInputLocalDateTime = calendarTime.toLocalDateTime();
             calculatedInputStartDateZoneOffset = startDatezdt.getOffset();
-
         }
     }
 

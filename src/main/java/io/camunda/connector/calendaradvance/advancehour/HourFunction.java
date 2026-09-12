@@ -56,12 +56,21 @@ public class HourFunction implements SubFunction {
                 calendarInput.forceStartZoneOffset(ZoneOffset.ofHours(0));
             }
 
-            LocalDateTime cursor = calendarInput.getCalculatedStartDateLocalDateTime();
 
+            logger.info("AdvanceHourFunction StartDateCalculation: {}", calendarInput.getExplanationStartDateCalculation());
 
-            for (String position: calendarInput.getPositionDurations()) {
+            for (String position : calendarInput.getPositionDurations()) {
+                LocalDateTime cursor = calendarInput.getCalculatedStartDateLocalDateTime();
                 long durationInMinutes = calendarInput.getDurationInMinutes(position);
-
+                logger.info("AdvanceHourFunction.start: Position[{}] StartDate[{}] BusinessZoneId[{}] Duration[{}] In Mn[{}] direction [{}] Holidays[{}] HolidayCountries[{}]",
+                        position,
+                        cursor,
+                        calendarInput.getBusinessZoneId(),
+                        calendarInput.getPrivateDuration(position, false),
+                        durationInMinutes,
+                        calendarInput.isDirectionForward(),
+                        calendarInput.isUseHolidays(),
+                        calendarInput.getHolidaysCountries());
                 for (int i = 0; i < 1000; i++) {
                     // Calculate the next period according the current date. The Period is adapted to the cursor
                     SlotContainer.AdvanceResult advanceResult = slotContainer.getNextPeriod(cursor,
@@ -100,7 +109,7 @@ public class HourFunction implements SubFunction {
 
                         }
                         listPeriods.add(lastPeriod);
-                        logger.debug("AdvanceDayFunction LAST Period [{}-{}]: {} mn : now {} ", lastPeriod.startTime, lastPeriod.endTime, lastPeriod.getMinutes(), cursor);
+                        logger.debug("AdvanceHourFunction.end: Position[{}] LAST Period [{}-{}]: {} mn : now {} ", position, lastPeriod.startTime, lastPeriod.endTime, lastPeriod.getMinutes(), cursor);
 
                         break; // end of the loop
                     }
@@ -109,7 +118,7 @@ public class HourFunction implements SubFunction {
                     listPeriods.add(advanceResult.period.cloneForRealPeriod(advanceResult.periodDate));
 
                     cursor = advanceResult.newDate;
-                    logger.info("AdvanceDayFunction Period [{}-{}]: {} mn : now {} for {} mn", advanceResult.period.startTime, advanceResult.period.endTime, advanceResult.period.getMinutes(), cursor, durationInMinutes);
+                    logger.info("AdvanceHourFunction Position[{}] Period [{}-{}]: {} mn : cursor {} for {} mn", position, advanceResult.period.startTime, advanceResult.period.endTime, advanceResult.period.getMinutes(), cursor, durationInMinutes);
 
                 }
                 ZonedDateTime zonedDateTime = null;
@@ -126,11 +135,19 @@ public class HourFunction implements SubFunction {
                     zonedDateTime = zdt == null ? null : zdt.toInstant().atOffset(calendarInput.getCalculatedStartDateZoneOffset()).toZonedDateTime();
                 }
                 calendarOutput.addResult(position, true, cursor, zonedDateTime, listPeriods);
-                logger.info("HourFunction: Start[{}] Duration[{} mn] ResultLocalDateTime[{}] ResultZonedDateTime[{}]",
+                logger.info("AdvanceHourFunction.end:   Position[{}] StartDate[{}] BusinessZoneId[{}] Duration[{}] In Mn[{}] direction [{}] Holidays[{}] HolidayCountries[{}] ResultLocalDateTime[{}] BusinessZoneId[{}] ResultZonedDateTime[{}]",
+                        position,
                         calendarInput.getCalculatedStartDateLocalDateTime(),
+                        calendarInput.getBusinessZoneId(),
+                        calendarInput.getPrivateDuration(position, false),
                         durationInMinutes,
+                        calendarInput.isDirectionForward(),
+                        calendarInput.isUseHolidays(),
+                        calendarInput.getHolidaysCountries(),
                         cursor,
+                        calendarInput.getBusinessZoneId(),
                         zonedDateTime);
+
 
             }
             return calendarOutput;
