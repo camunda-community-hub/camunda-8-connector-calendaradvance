@@ -10,7 +10,7 @@
   <groupId>io.camunda.connector</groupId>
   <artifactId>calendar-advance-function</artifactId>
   <name>CalendarAdvance</name>
-  <version>1.2.1</version>
+  <version>1.2.1.b</version>
   <description>Calendar Advance</description>
   <url>https://github.com/camunda-community-hub/camunda-8-connector-calendaradvance</url>
   <scm>
