@@ -7,9 +7,6 @@
 # defines grpc-address/rest-address - so any address set here would leak into every
 # profile, including "py" (SaaS), and silently override the SaaS-derived endpoint.
 # See application-local.yaml (self-managed, no profile) and application-py.yaml (SaaS).
-spring:
-  profiles:
-    default: local
 
 camunda:
   # Self-managed local dev profile (activated by default via spring.profiles.default in
