@@ -1,9 +1,9 @@
-package io.camunda.connector.calendaradvance;
+package org.camunda.connector.calendaradvance;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.camunda.connector.api.error.ConnectorException;
-import io.camunda.connector.calendaradvance.toolbox.CalendarAdvanceError;
-import io.camunda.connector.calendaradvance.toolbox.ParameterToolbox;
+import org.camunda.connector.calendaradvance.toolbox.CalendarAdvanceError;
+import org.camunda.connector.calendaradvance.toolbox.ParameterToolbox;
 import io.camunda.connector.cherrytemplate.CherryInput;
 import io.camunda.connector.cherrytemplate.RunnerParameter;
 import org.slf4j.Logger;

@@ -1,8 +1,8 @@
-package io.camunda.connector.calendaradvance.toolbox;
+package org.camunda.connector.calendaradvance.toolbox;
 
 import io.camunda.connector.api.error.ConnectorException;
-import io.camunda.connector.calendaradvance.CalendarAdvanceInput;
-import io.camunda.connector.calendaradvance.advanceday.DayFunction;
+import org.camunda.connector.calendaradvance.CalendarAdvanceInput;
+import org.camunda.connector.calendaradvance.advanceday.DayFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

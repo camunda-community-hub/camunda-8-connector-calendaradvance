@@ -1,13 +1,13 @@
-package io.camunda.connector.calendaradvance;
+package org.camunda.connector.calendaradvance;
 
 import io.camunda.connector.api.annotation.OutboundConnector;
 import io.camunda.connector.api.error.ConnectorException;
 import io.camunda.connector.api.outbound.OutboundConnectorContext;
 import io.camunda.connector.api.outbound.OutboundConnectorFunction;
-import io.camunda.connector.calendaradvance.advanceday.DayFunction;
-import io.camunda.connector.calendaradvance.advancehour.HourFunction;
-import io.camunda.connector.calendaradvance.toolbox.CalendarAdvanceError;
-import io.camunda.connector.calendaradvance.toolbox.SubFunction;
+import org.camunda.connector.calendaradvance.advanceday.DayFunction;
+import org.camunda.connector.calendaradvance.advancehour.HourFunction;
+import org.camunda.connector.calendaradvance.toolbox.CalendarAdvanceError;
+import org.camunda.connector.calendaradvance.toolbox.SubFunction;
 import io.camunda.connector.cherrytemplate.CherryConnector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

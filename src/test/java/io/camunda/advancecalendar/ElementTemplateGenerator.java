@@ -1,7 +1,7 @@
 package io.camunda.advancecalendar;
 
 import io.camunda.cherry.definition.RunnerDecorationTemplate;
-import io.camunda.connector.calendaradvance.CalendarAdvanceFunction;
+import org.camunda.connector.calendaradvance.CalendarAdvanceFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,8 +1,8 @@
-package io.camunda.connector.calendaradvance;
+package org.camunda.connector.calendaradvance;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.camunda.connector.calendaradvance.timemachine.SlotContainer;
-import io.camunda.connector.calendaradvance.toolbox.ParameterToolbox;
+import org.camunda.connector.calendaradvance.timemachine.SlotContainer;
+import org.camunda.connector.calendaradvance.toolbox.ParameterToolbox;
 import io.camunda.connector.cherrytemplate.CherryOutput;
 import io.camunda.connector.cherrytemplate.RunnerParameter;
 

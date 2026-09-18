@@ -1,9 +1,9 @@
-package io.camunda.connector.calendaradvance.toolbox;
+package org.camunda.connector.calendaradvance.toolbox;
 
 import io.camunda.connector.api.error.ConnectorException;
 import io.camunda.connector.api.outbound.OutboundConnectorContext;
-import io.camunda.connector.calendaradvance.CalendarAdvanceInput;
-import io.camunda.connector.calendaradvance.CalendarAdvanceOutput;
+import org.camunda.connector.calendaradvance.CalendarAdvanceInput;
+import org.camunda.connector.calendaradvance.CalendarAdvanceOutput;
 import io.camunda.connector.cherrytemplate.RunnerParameter;
 
 import java.util.List;

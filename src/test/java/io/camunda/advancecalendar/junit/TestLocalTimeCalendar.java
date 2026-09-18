@@ -2,11 +2,11 @@ package io.camunda.advancecalendar.junit;
 
 
 import io.camunda.connector.api.outbound.OutboundConnectorContext;
-import io.camunda.connector.calendaradvance.CalendarAdvanceFunction;
-import io.camunda.connector.calendaradvance.CalendarAdvanceInput;
-import io.camunda.connector.calendaradvance.CalendarAdvanceOutput;
-import io.camunda.connector.calendaradvance.advancehour.HourFunction;
-import io.camunda.connector.calendaradvance.timemachine.SlotContainer;
+import org.camunda.connector.calendaradvance.CalendarAdvanceFunction;
+import org.camunda.connector.calendaradvance.CalendarAdvanceInput;
+import org.camunda.connector.calendaradvance.CalendarAdvanceOutput;
+import org.camunda.connector.calendaradvance.advancehour.HourFunction;
+import org.camunda.connector.calendaradvance.timemachine.SlotContainer;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

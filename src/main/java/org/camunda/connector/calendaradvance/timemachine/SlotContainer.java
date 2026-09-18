@@ -1,8 +1,8 @@
-package io.camunda.connector.calendaradvance.timemachine;
+package org.camunda.connector.calendaradvance.timemachine;
 
 
 import io.camunda.connector.api.error.ConnectorException;
-import io.camunda.connector.calendaradvance.toolbox.CalendarAdvanceError;
+import org.camunda.connector.calendaradvance.toolbox.CalendarAdvanceError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
