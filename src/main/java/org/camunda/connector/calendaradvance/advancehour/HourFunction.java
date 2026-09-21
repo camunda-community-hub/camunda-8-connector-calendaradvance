@@ -38,7 +38,6 @@ public class HourFunction implements SubFunction {
     public CalendarAdvanceOutput executeSubFunction(CalendarAdvanceInput calendarInput, OutboundConnectorContext outboundConnectorContext) throws ConnectorException {
         logger.debug("HourFunction Start");
         try {
-            List<SlotContainer.Period> listPeriods = new ArrayList<>();
             // First, calculate the date according all parameters
             calendarInput.calculateReferenceDateLocalDateTime();
 
@@ -60,6 +59,7 @@ public class HourFunction implements SubFunction {
             logger.info("AdvanceHourFunction StartDateCalculation: {}", calendarInput.getExplanationStartDateCalculation());
 
             for (String position : calendarInput.getPositionDurations()) {
+                List<SlotContainer.Period> listPeriods = new ArrayList<>();
                 LocalDateTime cursor = calendarInput.getCalculatedStartDateLocalDateTime();
                 long durationInMinutes = calendarInput.getDurationInMinutes(position);
                 logger.info("AdvanceHourFunction.start: Position[{}] StartDate[{}] BusinessZoneId[{}] Duration[{}] In Mn[{}] direction [{}] Holidays[{}] HolidayCountries[{}]",
