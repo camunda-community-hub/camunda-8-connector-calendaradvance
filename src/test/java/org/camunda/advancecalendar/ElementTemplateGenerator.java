@@ -1,4 +1,4 @@
-package io.camunda.advancecalendar;
+package org.camunda.advancecalendar;
 
 import io.camunda.cherry.definition.RunnerDecorationTemplate;
 import org.camunda.connector.calendaradvance.CalendarAdvanceFunction;

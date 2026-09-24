@@ -78,6 +78,9 @@ public class DayFunction implements SubFunction {
                 }
                 if (!advanceDayResult.foundDate) {
                     // This is the end here!
+                    if (calendarInput.isErrorWhenNoDateFound()) {
+                        throw new ConnectorException(CalendarAdvanceError.ERROR_NO_DATE_FOUND, "No date found for position [" + position + "]");
+                    }
                     calendarOutput.addResult(position, false, null, null, null);
                     return calendarOutput;
                 }
@@ -89,6 +92,9 @@ public class DayFunction implements SubFunction {
                         || isMonthYearPeriod) {
                     AdvanceDayResult advanceResultAdjust = adjustTarget(calendarInput, advanceDayResult.resultLocalDate);
                     if (!advanceResultAdjust.foundDate) {
+                        if (calendarInput.isErrorWhenNoDateFound()) {
+                            throw new ConnectorException(CalendarAdvanceError.ERROR_NO_DATE_FOUND, "No date found for position [" + position + "]");
+                        }
                         calendarOutput.addResult(position, false, null, null, null);
                         return calendarOutput;
                     }
@@ -124,8 +130,10 @@ public class DayFunction implements SubFunction {
                 CalendarAdvanceInput.parameterBusinessCalendar,
                 CalendarAdvanceInput.parameterUseHolidays,
                 CalendarAdvanceInput.parameterHolidayCountries,
+                CalendarAdvanceInput.parameterHolidayCalendarPolicy,
                 CalendarAdvanceInput.parameterDayProgression,
-                CalendarAdvanceInput.parameterTargetProgression
+                CalendarAdvanceInput.parameterTargetProgression,
+                CalendarAdvanceInput.parameterErrorWhenNoDateFound
         );
     }
 
@@ -140,16 +148,18 @@ public class DayFunction implements SubFunction {
 
     @Override
     public Map<String, String> getBpmnErrors() {
-        return Map.of(CalendarAdvanceError.ERROR_BAD_DURATION, CalendarAdvanceError.ERROR_BAD_DURATION_EXPLANATION,
-                CalendarAdvanceError.ERROR_DURING_OPERATION, CalendarAdvanceError.ERROR_DURING_OPERATION_EXPLANATION,
-                CalendarAdvanceError.ERROR_CANT_GET_HOLIDAYS, CalendarAdvanceError.ERROR_CANT_GET_HOLIDAYS_EXPLANATION,
-                CalendarAdvanceError.ERROR_NO_COUNTRIESCODE, CalendarAdvanceError.ERROR_NO_COUNTRIESCODE_EXPLANATION,
-                CalendarAdvanceError.ERROR_NO_REFERENCE_START_DATE, CalendarAdvanceError.ERROR_NO_REFERENCE_START_DATE_EXPLANATION,
-                CalendarAdvanceError.ERROR_BAD_PERIOD, CalendarAdvanceError.ERROR_BAD_PERIOD_EXPLANATION,
-                CalendarAdvanceError.ERROR_BAD_INPUTPARAMETER, CalendarAdvanceError.ERROR_BAD_INPUTPARAMETER_EXPLANATION,
-                CalendarAdvanceError.ERROR_BAD_STARTDATE, CalendarAdvanceError.ERROR_BAD_STARTDATE_EXPLANATION,
-                CalendarAdvanceError.ERROR_INAPPROPRIATE_DURATION, CalendarAdvanceError.ERROR_INAPROPRIATE_DURATION_EXPLANATION,
-                CalendarAdvanceError.ERROR_MISSING_INPUT, CalendarAdvanceError.ERROR_MISSING_INPUT_EXPLANATION);
+        return Map.ofEntries(
+                Map.entry(CalendarAdvanceError.ERROR_BAD_DURATION, CalendarAdvanceError.ERROR_BAD_DURATION_EXPLANATION),
+                Map.entry(CalendarAdvanceError.ERROR_DURING_OPERATION, CalendarAdvanceError.ERROR_DURING_OPERATION_EXPLANATION),
+                Map.entry(CalendarAdvanceError.ERROR_CANT_GET_HOLIDAYS, CalendarAdvanceError.ERROR_CANT_GET_HOLIDAYS_EXPLANATION),
+                Map.entry(CalendarAdvanceError.ERROR_NO_COUNTRIESCODE, CalendarAdvanceError.ERROR_NO_COUNTRIESCODE_EXPLANATION),
+                Map.entry(CalendarAdvanceError.ERROR_NO_REFERENCE_START_DATE, CalendarAdvanceError.ERROR_NO_REFERENCE_START_DATE_EXPLANATION),
+                Map.entry(CalendarAdvanceError.ERROR_BAD_PERIOD, CalendarAdvanceError.ERROR_BAD_PERIOD_EXPLANATION),
+                Map.entry(CalendarAdvanceError.ERROR_BAD_INPUTPARAMETER, CalendarAdvanceError.ERROR_BAD_INPUTPARAMETER_EXPLANATION),
+                Map.entry(CalendarAdvanceError.ERROR_BAD_STARTDATE, CalendarAdvanceError.ERROR_BAD_STARTDATE_EXPLANATION),
+                Map.entry(CalendarAdvanceError.ERROR_INAPPROPRIATE_DURATION, CalendarAdvanceError.ERROR_INAPROPRIATE_DURATION_EXPLANATION),
+                Map.entry(CalendarAdvanceError.ERROR_MISSING_INPUT, CalendarAdvanceError.ERROR_MISSING_INPUT_EXPLANATION),
+                Map.entry(CalendarAdvanceError.ERROR_NO_DATE_FOUND, CalendarAdvanceError.ERROR_NO_DATE_FOUND_EXPLANATION));
     }
 
     @Override
@@ -261,7 +271,8 @@ public class DayFunction implements SubFunction {
                     calendarInput.isDirectionForward() ? LocalDateTime.of(cursor, SlotContainer.MIDNIGHT_MINUS) : cursor.atStartOfDay(),
                     calendarInput.isDirectionForward(),
                     calendarInput.isUseHolidays(),
-                    calendarInput.getHolidaysCountries());
+                    calendarInput.getHolidaysCountries(),
+                    calendarInput.getHolidayCalendarPolicy());
 
             if (!advanceResult.foundPeriod) {
                 // This is the end here!
@@ -307,7 +318,8 @@ public class DayFunction implements SubFunction {
                 direction > 0 ? cursor.atStartOfDay() : LocalDateTime.of(cursor, LocalTime.MIDNIGHT),
                 direction > 0,
                 calendarInput.isUseHolidays(),
-                calendarInput.getHolidaysCountries());
+                calendarInput.getHolidaysCountries(),
+                calendarInput.getHolidayCalendarPolicy());
 
         if (!advanceResult.foundPeriod) {
             // This is the end here!

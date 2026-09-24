@@ -3,6 +3,7 @@ package org.camunda.connector.calendaradvance.timemachine;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.camunda.connector.api.error.ConnectorException;
+import org.camunda.connector.calendaradvance.CalendarAdvanceInput;
 import org.camunda.connector.calendaradvance.toolbox.CalendarAdvanceError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,19 +41,51 @@ public class HolidayContainer {
     }
 
     /**
-     * Return true if the date is a holiday in any of the countries code given
+     * Return true if the date is a holiday, combining the countries code given according to the policy
      *
      * @param date          date to check
      * @param countriesCode list of code
-     * @return true if the day in an holiday
+     * @param policy        OR: a holiday in any calendar is enough. AND: the day must be a holiday in every calendar
+     * @return true if the day is a holiday
      */
-    public boolean isHoliday(LocalDate date, List<String> countriesCode) {
-        for (String countryCode : countriesCode) {
-            CalendarHoliday calendarHoliday = getCalendar(date.getYear(), countryCode);
-            if (calendarHoliday.listDays.contains(date))
-                return true;
+    public boolean isHoliday(LocalDate date, List<String> countriesCode, CalendarAdvanceInput.CalendarPolicy policy) {
+        String analysis = "";
+        boolean oneHoliday = false;
+        boolean allHoliday = true;
+        try {
+            String countries = "";
+            for (String countryCode : countriesCode) {
+                CalendarHoliday calendarHoliday = getCalendar(date.getYear(), countryCode);
+                if (calendarHoliday.listDays.contains(date)) {
+                    oneHoliday = true;
+                    countries += countryCode + ",";
+                    analysis += "[" + countryCode + "],";
+                } else {
+                    allHoliday = false;
+                }
+            }
+
+
+            switch (policy) {
+                case CalendarAdvanceInput.CalendarPolicy.ALL:
+                    if (allHoliday) {
+                        analysis += "==> Holiday";
+                        return true;
+                    }
+                    return false;
+                case CalendarAdvanceInput.CalendarPolicy.ONEOF:
+                    if (oneHoliday) {
+                        analysis += "==> Holiday";
+                        return true;
+                    }
+                    return false;
+                default:
+                    return false;
+            }
+        } finally {
+            if (oneHoliday)
+                logger.info("Holiday: Date[{}] {}  policy[{}] : {}", date, date.getDayOfWeek(), policy, analysis);
         }
-        return false;
     }
 
     /**
@@ -71,7 +104,7 @@ public class HolidayContainer {
             if (e.getCause() instanceof ConnectorException ce) {
                 throw ce;
             }
-            logger.error("Error when trying to load the calendar year[{",e);
+            logger.error("Error when trying to load the calendar year[{", e);
             throw new ConnectorException(CalendarAdvanceError.ERROR_CANT_GET_HOLIDAYS, "Error when trying to load the calendar " + e.getMessage());
         }
     }

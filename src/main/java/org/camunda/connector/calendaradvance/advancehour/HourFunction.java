@@ -76,10 +76,14 @@ public class HourFunction implements SubFunction {
                     SlotContainer.AdvanceResult advanceResult = slotContainer.getNextPeriod(cursor,
                             calendarInput.isDirectionForward(),
                             calendarInput.isUseHolidays(),
-                            calendarInput.getHolidaysCountries());
+                            calendarInput.getHolidaysCountries(),
+                            calendarInput.getHolidayCalendarPolicy());
 
                     if (!advanceResult.foundPeriod) {
                         // This is the end here!
+                        if (calendarInput.isErrorWhenNoDateFound()) {
+                            throw new ConnectorException(CalendarAdvanceError.ERROR_NO_DATE_FOUND, "No date found for position [" + position + "]");
+                        }
                         calendarOutput.addResult(position, false, null, null, null);
                         return calendarOutput;
                     }
@@ -147,8 +151,15 @@ public class HourFunction implements SubFunction {
                         cursor,
                         calendarInput.getBusinessZoneId(),
                         zonedDateTime);
+            }
 
-
+            // Throuw an error if one result is not found
+            if (calendarInput.isErrorWhenNoDateFound()) {
+                for (String position : calendarInput.getPositionDurations()) {
+                    CalendarAdvanceOutput.Result result = calendarOutput.getListResultDate(position);
+                    if (!result.foundDate)
+                        throw new ConnectorException(CalendarAdvanceError.ERROR_NO_DATE_FOUND, "No date found for [" + position + "]");
+                }
             }
             return calendarOutput;
 
@@ -188,7 +199,10 @@ public class HourFunction implements SubFunction {
                 CalendarAdvanceInput.parameterBusinessCalendar,
                 CalendarAdvanceInput.parameterBusinessTimeZone,
                 CalendarAdvanceInput.parameterUseHolidays,
-                CalendarAdvanceInput.parameterHolidayCountries
+                CalendarAdvanceInput.parameterHolidayCountries,
+                CalendarAdvanceInput.parameterHolidayCalendarPolicy,
+                CalendarAdvanceInput.parameterErrorWhenNoDateFound
+
         );
     }
 
@@ -210,7 +224,8 @@ public class HourFunction implements SubFunction {
                 CalendarAdvanceError.ERROR_NO_REFERENCE_START_DATE, CalendarAdvanceError.ERROR_NO_REFERENCE_START_DATE_EXPLANATION,
                 CalendarAdvanceError.ERROR_BAD_PERIOD, CalendarAdvanceError.ERROR_BAD_PERIOD_EXPLANATION,
                 CalendarAdvanceError.ERROR_BAD_INPUTPARAMETER, CalendarAdvanceError.ERROR_BAD_INPUTPARAMETER_EXPLANATION,
-                CalendarAdvanceError.ERROR_BAD_STARTDATE, CalendarAdvanceError.ERROR_BAD_STARTDATE_EXPLANATION
+                CalendarAdvanceError.ERROR_BAD_STARTDATE, CalendarAdvanceError.ERROR_BAD_STARTDATE_EXPLANATION,
+                CalendarAdvanceError.ERROR_NO_DATE_FOUND, CalendarAdvanceError.ERROR_NO_DATE_FOUND_EXPLANATION
         );
 
     }

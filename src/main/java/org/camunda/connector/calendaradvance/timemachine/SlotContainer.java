@@ -2,6 +2,7 @@ package org.camunda.connector.calendaradvance.timemachine;
 
 
 import io.camunda.connector.api.error.ConnectorException;
+import org.camunda.connector.calendaradvance.CalendarAdvanceInput;
 import org.camunda.connector.calendaradvance.toolbox.CalendarAdvanceError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,9 +127,14 @@ public class SlotContainer {
      *
      * @param referenceDate search at this moment
      * @param advance       if true, the next period in the calendar are found, else we search backward
+     * @param holidayCalendarPolicy OR (a holiday in any calendar is enough) or AND (must be a holiday in every calendar)
      * @return an advanceResult; which contain the period adjusted, the orginal period, the new reference date
      */
-    public AdvanceResult getNextPeriod(LocalDateTime referenceDate, boolean advance, boolean useHoliday, List<String> countriesCode) {
+    public AdvanceResult getNextPeriod(LocalDateTime referenceDate,
+                                       boolean advance,
+                                       boolean useHoliday,
+                                       List<String> countriesCode,
+                                       CalendarAdvanceInput.CalendarPolicy holidayCalendarPolicy) {
 
         LocalDateTime cursor = referenceDate;
         // Special case: if the time is MIDNIGHT_MINUS and advance, we transform to next day +1
@@ -153,7 +159,7 @@ public class SlotContainer {
                     .toList();
 
             // holiday ?
-            if (!foundSpecificDay && useHoliday && HolidayContainer.getInstance().isHoliday(cursor.toLocalDate(), countriesCode)) {
+            if (!foundSpecificDay && useHoliday && HolidayContainer.getInstance().isHoliday(cursor.toLocalDate(), countriesCode, holidayCalendarPolicy)) {
                 // we have to advance
                 cursor = advanceNextDay(cursor, advance);
                 continue;

@@ -28,7 +28,9 @@ import java.util.stream.Collectors;
         CalendarAdvanceInput.USE_HOLIDAYS,
         CalendarAdvanceInput.HOLIDAYS_COUNTRIES,
         CalendarAdvanceInput.DAY_PROGRESSION,
-        CalendarAdvanceInput.TARGET_PROGRESSION
+        CalendarAdvanceInput.TARGET_PROGRESSION,
+        CalendarAdvanceInput.ERROR_WHEN_NO_DATE_FOUND,
+        CalendarAdvanceInput.HOLIDAY_CALENDAR_POLICY
 
 }, type = "c-calendaradvance-function")
 public class CalendarAdvanceFunction implements OutboundConnectorFunction, CherryConnector {

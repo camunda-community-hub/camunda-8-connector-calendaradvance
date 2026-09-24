@@ -25,7 +25,6 @@ public class CalendarAdvanceError {
     public static final String ERROR_BAD_DURATION = "ERROR_BAD_DURATION";
     public static final String ERROR_BAD_DURATION_EXPLANATION = "Duration must be an ISO8601 format: P3D or PT14H54M or P2DT14H";
 
-
     public static final String ERROR_CANT_GET_HOLIDAYS = "ERROR_CANT_GET_HOLIDAYS";
     public static final String ERROR_CANT_GET_HOLIDAYS_EXPLANATION = "Error during access the calendar";
 
@@ -40,5 +39,8 @@ public class CalendarAdvanceError {
 
     public static final String ERROR_BAD_COUNTRYCODE = "ERROR_BAD_COUNTRYCODE";
     public static final String ERROR_BAD_COUNTRYCODE_EXPLANATION = "A country code must be exactly 2 alphanumeric characters";
+
+    public static final String ERROR_NO_DATE_FOUND = "NO_DATE_FOUND";
+    public static final String ERROR_NO_DATE_FOUND_EXPLANATION = "No date was found for one duration, and errorWhenNoDateFound is set to true";
 
 }

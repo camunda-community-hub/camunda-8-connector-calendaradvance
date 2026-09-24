@@ -25,8 +25,10 @@ This makes it well suited for SLA and deadline calculations: "resolve this ticke
   * [Time slots](#time-slots)
   * [24/7 calendar](#247-calendar)
 * [Holidays](#holidays)
+  * [Combining multiple holiday calendars: holidayCalendarPolicy](#combining-multiple-holiday-calendars-holidaycalendarpolicy)
 * [Time zones](#time-zones)
 * [Use the connector](#use-the-connector)
+  * [When no date can be found: errorWhenNoDateFound](#when-no-date-can-be-found-errorwhennodatefound)
   * [Advance days](#advance-days-1)
   * [Advance hours](#advance-hours-1)
 * [Use cases](#use-cases)
@@ -137,6 +139,23 @@ To define specific closed or open days directly — instead of, or in addition t
 * July 14 is open (morning only), even though it is a public holiday in the French calendar
 * July 15 is closed (the time range is empty)
 
+### Combining multiple holiday calendars: `holidayCalendarPolicy`
+
+When `holidaysCountries` lists more than one country, `holidayCalendarPolicy` controls how their calendars combine to decide whether a given day is closed. Two values are accepted:
+
+* **`OR`** (default) — a day is a holiday as soon as **any** of the listed countries considers it one. This is the historical, backward-compatible behavior: combining `["FR", "US"]` closes the calendar on every French holiday *and* every US holiday.
+* **`AND`** — a day is a holiday only if **every** listed country considers it one. Combining `["FR", "US"]` with `AND` only closes the calendar on days that are holidays in both France and the US at once (in practice, a much shorter list — most national holidays don't coincide).
+
+`holidayCalendarPolicy` is only meaningful when `useHolidays` is `true` and `holidaysCountries` has two or more entries; with a single country the two policies behave identically.
+
+**Example**
+
+Business calendar: default (Monday–Friday, 09:00–18:00). Holidays: `["FR", "US"]`.
+
+* July 4 (US Independence Day, not a French holiday) → closed with `OR`, open with `AND`
+* July 14 (Bastille Day, not a US holiday) → closed with `OR`, open with `AND`
+* January 1 (New Year's Day, a holiday in both countries) → closed with both `OR` and `AND`
+
 ---
 
 ## Time zones
@@ -207,6 +226,14 @@ When `durations` is used, `resultDateList` additionally holds one record per ent
 }
 ```
 
+### When no date can be found: `errorWhenNoDateFound`
+
+A calculation can fail to reach a result — for example, a business-day search that runs into the internal loop limit before finding an open day (see `MAX_LOOP_DAYS_CALENDAR` in the source), or a calendar that never has enough open time left to consume the requested duration. By default, the connector reports this by returning `foundDate: false` (with `resultDate`/`resultZonedDate`/`listPeriods` left empty) rather than failing the whole execution — useful when the caller wants to branch on "no date was found" as a normal outcome, e.g. in a BPMN gateway.
+
+Set `errorWhenNoDateFound` to `true` to change this: instead of returning `foundDate: false`, the connector throws a BPMN error `NO_DATE_FOUND`, which can be caught with an error boundary event. This is useful when "no date found" should be treated as an exceptional case rather than a normal branch in the process.
+
+`errorWhenNoDateFound` defaults to `false` (the historical behavior) and applies to both `advanceDay` and `advanceHour`.
+
 ### Advance days
 
 Advance the calendar by days. Advance may be forward or backward.
@@ -223,6 +250,8 @@ Advance the calendar by days. Advance may be forward or backward.
 | holidaysCountries | Holiday countries   | java.util.List    | REQUIRED |
 | dayProgression    | Days progression    | java.lang.String  | REQUIRED |
 | targetProgression | Target progression  | java.lang.String  | REQUIRED |
+| errorWhenNoDateFound | Error when no date found | java.lang.Boolean | OPTIONAL |
+| holidayCalendarPolicy | Holiday calendar policy | java.lang.String  | OPTIONAL |
 
 #### Outputs
 | Name        | Description          | Class                   | Level    |
@@ -245,6 +274,7 @@ Advance the calendar by days. Advance may be forward or backward.
 | ERROR_MISSING_INPUT           | Missing input parameter                                                             |
 | ERROR_BAD_DURATION            | Duration must be an ISO 8601 format: `P3D`, `PT14H54M`, or `P2DT14H`                 |
 | ERROR_BAD_COUNTRYCODE         | A country code must be exactly 2 alphanumeric characters                            |
+| NO_DATE_FOUND                 | No date was found for one duration, and `errorWhenNoDateFound` is set to `true`      |
 
 ### Advance hours
 
@@ -261,6 +291,8 @@ Advance in the calendar based on hours.
 | businessTimeZone  | Business TimeZone    | java.lang.String  | OPTIONAL |
 | useHolidays       | Use holidays         | java.lang.Boolean | REQUIRED |
 | holidaysCountries | Holiday countries    | java.util.List    | REQUIRED |
+| errorWhenNoDateFound | Error when no date found | java.lang.Boolean | OPTIONAL |
+| holidayCalendarPolicy | Holiday calendar policy | java.lang.String  | OPTIONAL |
 
 #### Outputs
 | Name            | Description           | Class                   | Level    |
@@ -282,6 +314,7 @@ Advance in the calendar based on hours.
 | ERROR_BAD_DURATION            | Duration must be an ISO 8601 format: `P3D`, `PT14H54M`, or `P2DT14H` |
 | ERROR_BAD_PERIOD              | A period must follow the pattern `<day>=<value>`                   |
 | ERROR_BAD_COUNTRYCODE         | A country code must be exactly 2 alphanumeric characters           |
+| NO_DATE_FOUND                 | No date was found for one duration, and `errorWhenNoDateFound` is set to `true` |
 
 ---
 

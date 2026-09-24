@@ -37,7 +37,7 @@ public class CalendarAdvanceOutput implements CherryOutput {
             "List or Map of result dates", // label
             Object.class, // class
             RunnerParameter.Level.OPTIONAL, "List or Map of results date, populate by the list or Map when multiple durations (in input durations) are provided");
-    private boolean foundDate;
+    private boolean foundDate=true;
     private LocalDateTime resultDate;
     private ZonedDateTime resultZonedDate;
     private List<SlotContainer.Period> listPeriods = new ArrayList<>();
@@ -133,7 +133,9 @@ public class CalendarAdvanceOutput implements CherryOutput {
         if (listResultDates instanceof Map)
             ((Map) listResultDates).put(key, new Result(foundDate, localDateTime, zonedDateTime, listPeriods));
 
-        this.foundDate = foundDate;
+        // Override to false if one result does not found a date
+        if (!foundDate)
+            this.foundDate = foundDate;
         this.resultDate = localDateTime;
         this.resultZonedDate = zonedDateTime;
         this.listPeriods = listPeriods;

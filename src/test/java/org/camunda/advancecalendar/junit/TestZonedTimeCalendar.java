@@ -1,4 +1,4 @@
-package io.camunda.advancecalendar.junit;
+package org.camunda.advancecalendar.junit;
 
 import io.camunda.connector.api.outbound.OutboundConnectorContext;
 import org.camunda.connector.calendaradvance.CalendarAdvanceFunction;

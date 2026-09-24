@@ -51,6 +51,15 @@ public class CalendarAdvanceInput implements CherryInput {
     public static final String TARGET_PROGRESSION_AFTER = "after";
     public static final String TARGET_PROGRESSION_BEFORE = "before";
 
+    public static final String ERROR_WHEN_NO_DATE_FOUND = "errorWhenNoDateFound";
+
+    public static final String HOLIDAY_CALENDAR_POLICY = "holidayCalendarPolicy";
+    public static final String HOLIDAY_CALENDAR_POLICY_V_ALL = "ALL";
+    public static final String HOLIDAY_CALENDAR_POLICY_V_ONEOF = "ONEOF";
+
+
+    public enum CalendarPolicy {ALL, ONEOF};
+
     public static final RunnerParameter parameterStartDay = new RunnerParameter(
             CalendarAdvanceInput.START_DATE, // name
             "Start Date", // label
@@ -116,6 +125,17 @@ public class CalendarAdvanceInput implements CherryInput {
             "List of countries (\"FR\", \"US\"). List of available countrycodes <a href=\\\"https://date.nager.at/Country\\\" target=\\\"_blank\\\">here</a> ")
             .addCondition(CalendarAdvanceInput.USE_HOLIDAYS, List.of("true"));
 
+    public static final RunnerParameter parameterHolidayCalendarPolicy = new RunnerParameter(
+            CalendarAdvanceInput.HOLIDAY_CALENDAR_POLICY, // name
+            "Holiday calendar policy", // label
+            String.class, // class
+            RunnerParameter.Level.REQUIRED, // level
+            "If ALL (default), the day must be in ALL calendar to be off. If ONEOF, one calendar having a vacation is enough to consider the day off")
+            .addChoice(CalendarAdvanceInput.HOLIDAY_CALENDAR_POLICY_V_ALL, "All")
+            .addChoice(CalendarAdvanceInput.HOLIDAY_CALENDAR_POLICY_V_ONEOF, "One Of")
+            .setDefaultValue(CalendarAdvanceInput.HOLIDAY_CALENDAR_POLICY_V_ALL)
+            .addCondition(CalendarAdvanceInput.USE_HOLIDAYS, List.of("true"));
+
     public static final RunnerParameter parameterDayProgression = new RunnerParameter(
             CalendarAdvanceInput.DAY_PROGRESSION, // name
             "Days progression", // label
@@ -134,6 +154,15 @@ public class CalendarAdvanceInput implements CherryInput {
             .addChoice(CalendarAdvanceInput.TARGET_PROGRESSION_RESULT, "Result day")
             .addChoice(CalendarAdvanceInput.TARGET_PROGRESSION_AFTER, "After")
             .addChoice(CalendarAdvanceInput.TARGET_PROGRESSION_BEFORE, "Before");
+
+    public static final RunnerParameter parameterErrorWhenNoDateFound = new RunnerParameter(
+            CalendarAdvanceInput.ERROR_WHEN_NO_DATE_FOUND, // name
+            "Error when no date found", // label
+            Boolean.class, // class
+            RunnerParameter.Level.OPTIONAL, // level
+            "If no date are found for one duration, then throw an error NO_DATE_FOUND")
+            .setVisibleInTemplate();
+
 
 
     public String calendarAdvanceFunction;
@@ -154,6 +183,8 @@ public class CalendarAdvanceInput implements CherryInput {
     public String businessTimeZone;
     public String dayProgression;
     public String targetProgression;
+    public boolean errorWhenNoDateFound;
+    public String holidayCalendarPolicy;
     @JsonIgnoreProperties(ignoreUnknown = true)
     private LocalDateTime calculatedInputLocalDateTime;
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -432,6 +463,21 @@ public class CalendarAdvanceInput implements CherryInput {
 
     public List<String> getHolidaysCountries() {
         return holidaysCountries;
+    }
+
+    public boolean isErrorWhenNoDateFound() {
+        return errorWhenNoDateFound;
+    }
+
+    /**
+     * Default policy is OR: a date is a holiday if any of the calendars considers it a holiday.
+     *
+     * @return the policy to apply when combining multiple holiday calendars
+     */
+    public CalendarPolicy getHolidayCalendarPolicy() {
+        return (holidayCalendarPolicy == null || holidayCalendarPolicy.isBlank())
+                ? CalendarPolicy.ONEOF
+                : CalendarPolicy.valueOf(holidayCalendarPolicy);
     }
 
     @Override
