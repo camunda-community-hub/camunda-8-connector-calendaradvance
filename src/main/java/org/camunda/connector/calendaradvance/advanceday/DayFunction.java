@@ -2,13 +2,13 @@ package org.camunda.connector.calendaradvance.advanceday;
 
 import io.camunda.connector.api.error.ConnectorException;
 import io.camunda.connector.api.outbound.OutboundConnectorContext;
+import io.camunda.connector.cherrytemplate.RunnerParameter;
 import org.camunda.connector.calendaradvance.CalendarAdvanceInput;
 import org.camunda.connector.calendaradvance.CalendarAdvanceOutput;
 import org.camunda.connector.calendaradvance.timemachine.SlotContainer;
 import org.camunda.connector.calendaradvance.toolbox.CalendarAdvanceError;
 import org.camunda.connector.calendaradvance.toolbox.SubFunction;
 import org.camunda.connector.calendaradvance.toolbox.ValidateInput;
-import io.camunda.connector.cherrytemplate.RunnerParameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +44,7 @@ public class DayFunction implements SubFunction {
             ValidateInput.validateInput(calendarInput, true);
 
             // Now start the calculation
-            CalendarAdvanceOutput calendarOutput = new CalendarAdvanceOutput( calendarInput.isDurationAMap());
+            CalendarAdvanceOutput calendarOutput = new CalendarAdvanceOutput(calendarInput.isDurationAMap());
 
             SlotContainer slotContainer = new SlotContainer();
             slotContainer.setSlots(calendarInput.getBusinessCalendar());
@@ -189,24 +189,24 @@ public class DayFunction implements SubFunction {
         CalendarAdvanceInput.TYPEPERIOD type = calendarInput.getTypePeriod(position);
 
         LocalDate endDate;
-        String durationLog="";
+        String durationLog = "";
         if (type == CalendarAdvanceInput.TYPEPERIOD.DAY || type == CalendarAdvanceInput.TYPEPERIOD.TIME) {
             endDate = cursor.plusDays((calendarInput.isDirectionForward() ? 1 : -1) * calendarInput.getDurationInDays(position));
-            durationLog = (calendarInput.isDirectionForward() ? 1 : -1) * calendarInput.getDurationInDays(position)+" days";
+            durationLog = (calendarInput.isDirectionForward() ? 1 : -1) * calendarInput.getDurationInDays(position) + " days";
         } else if (type == CalendarAdvanceInput.TYPEPERIOD.MONTH) {
             Period period = calendarInput.getPeriod(position);
             endDate = cursor.plusMonths((calendarInput.isDirectionForward() ? 1 : -1) * period.getMonths())
                     .plusDays((calendarInput.isDirectionForward() ? 1 : -1) * period.getDays());
-            durationLog = (calendarInput.isDirectionForward() ? 1 : -1) * period.getMonths()+" months";
+            durationLog = (calendarInput.isDirectionForward() ? 1 : -1) * period.getMonths() + " months";
         } else if (type == CalendarAdvanceInput.TYPEPERIOD.YEAR) {
             Period period = calendarInput.getPeriod(position);
-            int factor=calendarInput.isDirectionForward() ? 1 : -1;
+            int factor = calendarInput.isDirectionForward() ? 1 : -1;
             endDate = cursor.plusYears(factor * period.getYears())
                     .plusMonths(factor * period.getMonths())
                     .plusDays(factor * period.getDays());
-            durationLog = (factor * period.getYears())+" years, "
-                    +(factor * period.getMonths()) +" months, "
-                    +(factor * period.getDays())+" days";
+            durationLog = (factor * period.getYears()) + " years, "
+                    + (factor * period.getMonths()) + " months, "
+                    + (factor * period.getDays()) + " days";
         } else {
             logger.error("Unknown duration type [{}]", calendarInput.getInputDuration(position));
             throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Unknown type from duration[" + calendarInput.getInputDuration(position) + "]");

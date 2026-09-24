@@ -1,10 +1,10 @@
 package org.camunda.connector.calendaradvance;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.camunda.connector.calendaradvance.timemachine.SlotContainer;
-import org.camunda.connector.calendaradvance.toolbox.ParameterToolbox;
 import io.camunda.connector.cherrytemplate.CherryOutput;
 import io.camunda.connector.cherrytemplate.RunnerParameter;
+import org.camunda.connector.calendaradvance.timemachine.SlotContainer;
+import org.camunda.connector.calendaradvance.toolbox.ParameterToolbox;
 
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -37,14 +37,14 @@ public class CalendarAdvanceOutput implements CherryOutput {
             "List or Map of result dates", // label
             Object.class, // class
             RunnerParameter.Level.OPTIONAL, "List or Map of results date, populate by the list or Map when multiple durations (in input durations) are provided");
-    private boolean foundDate=true;
-    private LocalDateTime resultDate;
-    private ZonedDateTime resultZonedDate;
-    private List<SlotContainer.Period> listPeriods = new ArrayList<>();
     /**
      * Result can be a LIST or a MAP accordinf the input
      */
     public Object listResultDates;
+    private boolean foundDate = true;
+    private LocalDateTime resultDate;
+    private ZonedDateTime resultZonedDate;
+    private List<SlotContainer.Period> listPeriods = new ArrayList<>();
 
     public CalendarAdvanceOutput() {
         listResultDates = new ArrayList<>();
@@ -97,7 +97,6 @@ public class CalendarAdvanceOutput implements CherryOutput {
     public Collection<Result> getListResultDateCollection() {
         if (listResultDates instanceof List resultList)
             return new LinkedHashSet<>(resultList);
-        ;
         if (listResultDates instanceof Map resultMap)
             return resultMap.values();
         return null;

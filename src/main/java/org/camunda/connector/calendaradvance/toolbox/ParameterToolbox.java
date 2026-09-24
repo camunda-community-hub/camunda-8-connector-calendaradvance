@@ -1,8 +1,8 @@
 package org.camunda.connector.calendaradvance.toolbox;
 
+import io.camunda.connector.cherrytemplate.RunnerParameter;
 import org.camunda.connector.calendaradvance.CalendarAdvanceFunction;
 import org.camunda.connector.calendaradvance.CalendarAdvanceInput;
-import io.camunda.connector.cherrytemplate.RunnerParameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

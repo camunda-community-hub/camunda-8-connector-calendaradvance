@@ -125,8 +125,8 @@ public class SlotContainer {
      * The period is adapted to the reference date: for example, if the reference date start at 10:13, and a period 9:00-12:00 is found the period returned
      * is 10:13-1200 if advance, or 09:00-1°:13 is ! advance
      *
-     * @param referenceDate search at this moment
-     * @param advance       if true, the next period in the calendar are found, else we search backward
+     * @param referenceDate         search at this moment
+     * @param advance               if true, the next period in the calendar are found, else we search backward
      * @param holidayCalendarPolicy OR (a holiday in any calendar is enough) or AND (must be a holiday in every calendar)
      * @return an advanceResult; which contain the period adjusted, the orginal period, the new reference date
      */

@@ -4,11 +4,11 @@ import io.camunda.connector.api.annotation.OutboundConnector;
 import io.camunda.connector.api.error.ConnectorException;
 import io.camunda.connector.api.outbound.OutboundConnectorContext;
 import io.camunda.connector.api.outbound.OutboundConnectorFunction;
+import io.camunda.connector.cherrytemplate.CherryConnector;
 import org.camunda.connector.calendaradvance.advanceday.DayFunction;
 import org.camunda.connector.calendaradvance.advancehour.HourFunction;
 import org.camunda.connector.calendaradvance.toolbox.CalendarAdvanceError;
 import org.camunda.connector.calendaradvance.toolbox.SubFunction;
-import io.camunda.connector.cherrytemplate.CherryConnector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +48,7 @@ public class CalendarAdvanceFunction implements OutboundConnectorFunction, Cherr
         try {
             calendarAdvanceInput = outboundConnectorContext.bindVariables(CalendarAdvanceInput.class);
         } catch (Exception e) {
-            logger.error("Bad Input Parameters to bindVariables ",e);
+            logger.error("Bad Input Parameters to bindVariables ", e);
             throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_INPUTPARAMETER, "CalendarAdvance can't bind variable " + e.getMessage() + "]");
         }
         // search the sub-function referenced
@@ -122,7 +122,6 @@ public class CalendarAdvanceFunction implements OutboundConnectorFunction, Cherr
      *
      * @return list of items where the function applies
      */
-
 
 
     @Override

@@ -2,10 +2,10 @@ package org.camunda.connector.calendaradvance;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.camunda.connector.api.error.ConnectorException;
-import org.camunda.connector.calendaradvance.toolbox.CalendarAdvanceError;
-import org.camunda.connector.calendaradvance.toolbox.ParameterToolbox;
 import io.camunda.connector.cherrytemplate.CherryInput;
 import io.camunda.connector.cherrytemplate.RunnerParameter;
+import org.camunda.connector.calendaradvance.toolbox.CalendarAdvanceError;
+import org.camunda.connector.calendaradvance.toolbox.ParameterToolbox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,8 +20,6 @@ import java.util.*;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CalendarAdvanceInput implements CherryInput {
 
-    private final Logger logger = LoggerFactory.getLogger(CalendarAdvanceInput.class.getName());
-
     /**
      * Attention, each Input here must be added in the PdfFunction, list of InputVariables
      */
@@ -32,41 +30,30 @@ public class CalendarAdvanceInput implements CherryInput {
     public static final String DIRECTION = "direction";
     public static final String DIRECTION_V_FORWARD = "forward";
     public static final String DIRECTION_V_BACKWARD = "backward";
-
     public static final String START_DATE = "startDate";
     public static final String BUSINESS_CALENDAR = "businessCalendar";
     public static final String BUSINESS_TIMEZONE = "businessTimeZone";
     public static final String USE_HOLIDAYS = "useHolidays";
     public static final String HOLIDAYS_COUNTRIES = "holidaysCountries";
-
-
     public static final String DURATION = "duration";
     public static final String DURATIONS = "durations";
     public static final String DAY_PROGRESSION = "dayProgression";
     public static final String DAY_PROGRESSION_V_BUSINESSDAY = "businessday";
     public static final String DAY_PROGRESSION_V_CALENDARDAY = "calendarday";
-
     public static final String TARGET_PROGRESSION = "targetProgression";
     public static final String TARGET_PROGRESSION_RESULT = "result";
     public static final String TARGET_PROGRESSION_AFTER = "after";
     public static final String TARGET_PROGRESSION_BEFORE = "before";
-
     public static final String ERROR_WHEN_NO_DATE_FOUND = "errorWhenNoDateFound";
-
     public static final String HOLIDAY_CALENDAR_POLICY = "holidayCalendarPolicy";
     public static final String HOLIDAY_CALENDAR_POLICY_V_ALL = "ALL";
     public static final String HOLIDAY_CALENDAR_POLICY_V_ONEOF = "ONEOF";
-
-
-    public enum CalendarPolicy {ALL, ONEOF};
-
     public static final RunnerParameter parameterStartDay = new RunnerParameter(
             CalendarAdvanceInput.START_DATE, // name
             "Start Date", // label
             Date.class, // class
             RunnerParameter.Level.REQUIRED, // level
             "Start from this day");
-
     public static final RunnerParameter parameterDuration = new RunnerParameter(
             CalendarAdvanceInput.DURATION,
             // name
@@ -75,6 +62,7 @@ public class CalendarAdvanceInput implements CherryInput {
             RunnerParameter.Level.OPTIONAL, // level
             "Duration ISO 8601 : P2DT5H23M54S. When a Month or Year is given with CalendarDay, then it step by this duration")
             .setVisibleInTemplate();
+
     public static final RunnerParameter parameterDurations = new RunnerParameter(
             CalendarAdvanceInput.DURATIONS,
             // name
@@ -83,7 +71,6 @@ public class CalendarAdvanceInput implements CherryInput {
             RunnerParameter.Level.OPTIONAL, // level
             "ISO 8601 List [\"P2DT5H23M54S\", \"PT23H\"] or Map {\"INNER\": \"P2DT5H23M54S\", \"DUEDATE\": \"PT24\"}  of Durations")
             .setVisibleInTemplate();
-
     public static final RunnerParameter parameterDirection = new RunnerParameter(
             CalendarAdvanceInput.DIRECTION,
             // name
@@ -93,15 +80,12 @@ public class CalendarAdvanceInput implements CherryInput {
             "Direction to advance")
             .addChoice(DIRECTION_V_FORWARD, "forward")
             .addChoice(DIRECTION_V_BACKWARD, "backward");
-
-
     public static final RunnerParameter parameterBusinessCalendar = new RunnerParameter(
             CalendarAdvanceInput.BUSINESS_CALENDAR, // name
             "Business Calendar", // label
             List.class, // class
             RunnerParameter.Level.OPTIONAL, // level
             "List of business calendar slot. Default is Monday to Friday, 09:00 to 18:00");
-
     public static final RunnerParameter parameterBusinessTimeZone = new RunnerParameter(
             CalendarAdvanceInput.BUSINESS_TIMEZONE, // name
             "Business TimeZone", // label
@@ -109,14 +93,12 @@ public class CalendarAdvanceInput implements CherryInput {
             RunnerParameter.Level.OPTIONAL, // level
             "The business Calendar can be attached to a timezone. Region Based and Fixed UTC offsets accepted. Visit https://en.wikipedia.org/wiki/List_of_tz_database_time_zones")
             .setVisibleInTemplate();
-
     public static final RunnerParameter parameterUseHolidays = new RunnerParameter(
             CalendarAdvanceInput.USE_HOLIDAYS, // name
             "Use holidays", // label
             Boolean.class, // class
             RunnerParameter.Level.REQUIRED, // level
             "Holidays on country is used and considered as closed");
-
     public static final RunnerParameter parameterHolidayCountries = new RunnerParameter(
             CalendarAdvanceInput.HOLIDAYS_COUNTRIES, // name
             "Holiday countries", // label
@@ -124,7 +106,6 @@ public class CalendarAdvanceInput implements CherryInput {
             RunnerParameter.Level.REQUIRED, // level
             "List of countries (\"FR\", \"US\"). List of available countrycodes <a href=\\\"https://date.nager.at/Country\\\" target=\\\"_blank\\\">here</a> ")
             .addCondition(CalendarAdvanceInput.USE_HOLIDAYS, List.of("true"));
-
     public static final RunnerParameter parameterHolidayCalendarPolicy = new RunnerParameter(
             CalendarAdvanceInput.HOLIDAY_CALENDAR_POLICY, // name
             "Holiday calendar policy", // label
@@ -135,7 +116,6 @@ public class CalendarAdvanceInput implements CherryInput {
             .addChoice(CalendarAdvanceInput.HOLIDAY_CALENDAR_POLICY_V_ONEOF, "One Of")
             .setDefaultValue(CalendarAdvanceInput.HOLIDAY_CALENDAR_POLICY_V_ALL)
             .addCondition(CalendarAdvanceInput.USE_HOLIDAYS, List.of("true"));
-
     public static final RunnerParameter parameterDayProgression = new RunnerParameter(
             CalendarAdvanceInput.DAY_PROGRESSION, // name
             "Days progression", // label
@@ -144,7 +124,6 @@ public class CalendarAdvanceInput implements CherryInput {
             "Method to advance one day: business day (only open day in business calendar are used) or calendar day")
             .addChoice(CalendarAdvanceInput.DAY_PROGRESSION_V_BUSINESSDAY, "Business day")
             .addChoice(CalendarAdvanceInput.DAY_PROGRESSION_V_CALENDARDAY, "Calendar day");
-
     public static final RunnerParameter parameterTargetProgression = new RunnerParameter(
             CalendarAdvanceInput.TARGET_PROGRESSION, // name
             "Target progression", // label
@@ -154,7 +133,6 @@ public class CalendarAdvanceInput implements CherryInput {
             .addChoice(CalendarAdvanceInput.TARGET_PROGRESSION_RESULT, "Result day")
             .addChoice(CalendarAdvanceInput.TARGET_PROGRESSION_AFTER, "After")
             .addChoice(CalendarAdvanceInput.TARGET_PROGRESSION_BEFORE, "Before");
-
     public static final RunnerParameter parameterErrorWhenNoDateFound = new RunnerParameter(
             CalendarAdvanceInput.ERROR_WHEN_NO_DATE_FOUND, // name
             "Error when no date found", // label
@@ -162,13 +140,9 @@ public class CalendarAdvanceInput implements CherryInput {
             RunnerParameter.Level.OPTIONAL, // level
             "If no date are found for one duration, then throw an error NO_DATE_FOUND")
             .setVisibleInTemplate();
-
-
-
+    private final Logger logger = LoggerFactory.getLogger(CalendarAdvanceInput.class.getName());
     public String calendarAdvanceFunction;
-
     public boolean useBusinessDays;
-
     public List<String> businessCalendar;
     /*
     It can ba a String ("PT10H") or a List<String>
@@ -179,7 +153,6 @@ public class CalendarAdvanceInput implements CherryInput {
     public Object startDate;
     public boolean useHolidays;
     public List<String> holidaysCountries;
-
     public String businessTimeZone;
     public String dayProgression;
     public String targetProgression;
@@ -190,6 +163,7 @@ public class CalendarAdvanceInput implements CherryInput {
     @JsonIgnoreProperties(ignoreUnknown = true)
     private ZoneOffset calculatedInputStartDateZoneOffset;
     private boolean zonedDateTime = false;
+    private String explanationStartDateCalculation = "";
 
     public String getCalendarAdvanceFunction() {
         return calendarAdvanceFunction;
@@ -243,6 +217,7 @@ public class CalendarAdvanceInput implements CherryInput {
 
     /**
      * return true is the input is multiple durations
+     *
      * @return
      */
     public boolean isDurations() {
@@ -253,14 +228,14 @@ public class CalendarAdvanceInput implements CherryInput {
                 return false;
         }
         if (durations instanceof Map durationsMap) {
-            if (durationsMap.isEmpty())
-                return false;
+            return !durationsMap.isEmpty();
         }
         return true;
     }
 
     /**
      * return the list of all durations. If this is not a list, return "1", as a convention to search on "duration" and not in the list
+     *
      * @return
      */
     public Set<String> getPositionDurations() {
@@ -316,7 +291,7 @@ public class CalendarAdvanceInput implements CherryInput {
             logger.error("Duration[{}] does not contains months", getInputDuration(position));
             throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_DURATION, "Duration[" + duration + "] does not contains Months");
         }
-        return period.getMonths() + period.getYears() * 12;
+        return period.getMonths() + period.getYears() * 12L;
     }
 
     /**
@@ -337,9 +312,7 @@ public class CalendarAdvanceInput implements CherryInput {
 
 
     public boolean isDurationAMap() {
-        if (durations != null && durations instanceof Map)
-            return true;
-        return false;
+        return durations != null && durations instanceof Map;
     }
 
     /**
@@ -476,7 +449,7 @@ public class CalendarAdvanceInput implements CherryInput {
      */
     public CalendarPolicy getHolidayCalendarPolicy() {
         return (holidayCalendarPolicy == null || holidayCalendarPolicy.isBlank())
-                ? CalendarPolicy.ONEOF
+                ? CalendarPolicy.ALL
                 : CalendarPolicy.valueOf(holidayCalendarPolicy);
     }
 
@@ -485,86 +458,85 @@ public class CalendarAdvanceInput implements CherryInput {
         return ParameterToolbox.getInputParameters();
     }
 
-    private String explanationStartDateCalculation ="";
     public void calculateReferenceDateLocalDateTime() {
         try {
-            explanationStartDateCalculation = "StartDate["+startDate+"] ";
+            explanationStartDateCalculation = "StartDate[" + startDate + "] ";
             calculatedInputStartDateZoneOffset = null;
             if (startDate == null) {
-                explanationStartDateCalculation +="null";
+                explanationStartDateCalculation += "null";
                 calculatedInputLocalDateTime = null;
                 return;
             }
 
             if (startDate instanceof LocalDate referenceDateLocalDate) {
-                explanationStartDateCalculation +="LocalDate-use atStartofDay";
+                explanationStartDateCalculation += "LocalDate-use atStartofDay";
                 calculatedInputLocalDateTime = referenceDateLocalDate.atStartOfDay();
                 return;
             }
 
             // ---------- Specific type LocalDateTime
             if (startDate instanceof LocalDateTime startDateLocalDateTime) {
-                explanationStartDateCalculation +="LocalDateTime use businessIdZone["+getBusinessZoneId()+"] ";
+                explanationStartDateCalculation += "LocalDateTime use businessIdZone[" + getBusinessZoneId() + "] ";
                 calculatedFromLocalDateTime(startDateLocalDateTime);
-                explanationStartDateCalculation +="LocalDateTime["+calculatedInputLocalDateTime+"]";
+                explanationStartDateCalculation += "LocalDateTime[" + calculatedInputLocalDateTime + "]";
                 return;
             }
             // ----------- Specific type ZonedDateTime
             if (startDate instanceof ZonedDateTime startDateZonedDateTime) {
-                explanationStartDateCalculation +="ZonedDateTime zoneId["+startDateZonedDateTime.getOffset().toString()+"] Move to BusinessIdZone["+getBusinessZoneId()+"] ";
+                explanationStartDateCalculation += "ZonedDateTime zoneId[" + startDateZonedDateTime.getOffset().toString() + "] Move to BusinessIdZone[" + getBusinessZoneId() + "] ";
                 calculatedFromZonedDateTime(startDateZonedDateTime);
-                explanationStartDateCalculation +="LocalDateTime["+calculatedInputLocalDateTime+"]";
+                explanationStartDateCalculation += "LocalDateTime[" + calculatedInputLocalDateTime + "]";
                 return;
             }
             if (startDate instanceof OffsetDateTime startDateOffsetDateTime) {
-                explanationStartDateCalculation +="OffsetDateTime use businessIdZone["+getBusinessZoneId()+"] ";
+                explanationStartDateCalculation += "OffsetDateTime use businessIdZone[" + getBusinessZoneId() + "] ";
                 calculatedFromOffsetDateTime(startDateOffsetDateTime);
-                explanationStartDateCalculation +="LocalDateTime["+calculatedInputLocalDateTime+"] calculatedInputStartDateZoneOffset["+calculatedInputStartDateZoneOffset+"]";
+                explanationStartDateCalculation += "LocalDateTime[" + calculatedInputLocalDateTime + "] calculatedInputStartDateZoneOffset[" + calculatedInputStartDateZoneOffset + "]";
                 return;
             }
             // String
             String startDateString = startDate.toString();
-            explanationStartDateCalculation +="String, ";
+            explanationStartDateCalculation += "String, ";
             // String offsetDateTime
             if (startDateString.endsWith("Z") || startDateString.matches(".*[+-]\\d{2}:\\d{2}$")) {
                 OffsetDateTime odt = OffsetDateTime.parse(startDateString);
-                explanationStartDateCalculation +="WithOffset["+odt+"] ";
+                explanationStartDateCalculation += "WithOffset[" + odt + "] ";
                 calculatedFromOffsetDateTime(odt);
-                explanationStartDateCalculation +="LocalDateTime["+calculatedInputLocalDateTime+"] calculatedInputStartDateZoneOffset["+calculatedInputStartDateZoneOffset+"]";
+                explanationStartDateCalculation += "LocalDateTime[" + calculatedInputLocalDateTime + "] calculatedInputStartDateZoneOffset[" + calculatedInputStartDateZoneOffset + "]";
                 return;
             }
             // String ZonedDateTime
             try {
 
                 ZonedDateTime zdt = ZonedDateTime.parse(startDateString);
-                explanationStartDateCalculation +="ZonedDateTime["+zdt+"] ";
+                explanationStartDateCalculation += "ZonedDateTime[" + zdt + "] ";
                 calculatedFromZonedDateTime(zdt);
-                explanationStartDateCalculation +="LocalDateTime["+calculatedInputLocalDateTime+"] businessIdZone["+getBusinessZoneId()+"] StartDateOffset["+calculatedInputStartDateZoneOffset+"]";
+                explanationStartDateCalculation += "LocalDateTime[" + calculatedInputLocalDateTime + "] businessIdZone[" + getBusinessZoneId() + "] StartDateOffset[" + calculatedInputStartDateZoneOffset + "]";
                 return;
             } catch (DateTimeParseException e) {
                 // do nothing,
-                explanationStartDateCalculation +="DateTimeParseException, ";
+                explanationStartDateCalculation += "DateTimeParseException, ";
             }
 
 
             // no timezone in input → LocalDateTime
             try {
                 LocalDateTime ldt = LocalDateTime.parse(startDateString);
-                explanationStartDateCalculation +="LocalDateTime["+ldt+"] ";
+                explanationStartDateCalculation += "LocalDateTime[" + ldt + "] ";
                 calculatedFromLocalDateTime(ldt);
-                explanationStartDateCalculation +="LocalDateTime["+calculatedInputLocalDateTime+"] businessIdZone["+getBusinessZoneId()+"]";
+                explanationStartDateCalculation += "LocalDateTime[" + calculatedInputLocalDateTime + "] businessIdZone[" + getBusinessZoneId() + "]";
                 return;
             } catch (DateTimeParseException e) {
-                explanationStartDateCalculation +="DateTimeParseException, ";
+                explanationStartDateCalculation += "DateTimeParseException, ";
                 // do nothing
             }
 
             LocalDate date = LocalDate.parse(startDateString);
-            explanationStartDateCalculation +="LocalDate["+date+"] ";
+            explanationStartDateCalculation += "LocalDate[" + date + "] ";
             calculatedInputLocalDateTime = date.atStartOfDay();
-            explanationStartDateCalculation +="LocalDateTime["+calculatedInputLocalDateTime+"]";
+            explanationStartDateCalculation += "LocalDateTime[" + calculatedInputLocalDateTime + "]";
         } catch (Exception e) {
-            explanationStartDateCalculation +="Exception"+e.getMessage();
+            explanationStartDateCalculation += "Exception" + e.getMessage();
             logger.error("Error getting STARTDATE [{}]", startDate, e);
             throw new ConnectorException(CalendarAdvanceError.ERROR_BAD_STARTDATE, "Error getting reference date from[" + startDate + "] : " + e.getMessage());
         }
@@ -574,13 +546,6 @@ public class CalendarAdvanceInput implements CherryInput {
     public String getExplanationStartDateCalculation() {
         return explanationStartDateCalculation;
     }
-    /* ******************************************************************** */
-    /*                                                                      */
-    /*  calculate Reference Date                                            */
-    /*                                                                      */
-    /*  This class should be call at begining to calculated                 */
-    /* calculatedInputLocalDateTime and calculatedInputZoneOffset           */
-    /* ******************************************************************** */
 
     private void calculatedFromLocalDateTime(LocalDateTime ldt) {
         ZoneId businessCalendarZoneId = getBusinessZoneId();
@@ -593,6 +558,13 @@ public class CalendarAdvanceInput implements CherryInput {
         calculatedInputStartDateZoneOffset = null;
 
     }
+    /* ******************************************************************** */
+    /*                                                                      */
+    /*  calculate Reference Date                                            */
+    /*                                                                      */
+    /*  This class should be call at begining to calculated                 */
+    /* calculatedInputLocalDateTime and calculatedInputZoneOffset           */
+    /* ******************************************************************** */
 
     private void calculatedFromZonedDateTime(ZonedDateTime startDatezdt) {
         zonedDateTime = true;
@@ -616,6 +588,8 @@ public class CalendarAdvanceInput implements CherryInput {
             zonedDateTime = true;
         }
     }
+
+    public enum CalendarPolicy {ALL, ONEOF}
 
     /* ******************************************************************** */
     /*                                                                      */
