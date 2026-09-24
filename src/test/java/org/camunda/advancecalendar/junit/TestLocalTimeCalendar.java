@@ -236,6 +236,7 @@ public class TestLocalTimeCalendar {
         calendarInput.duration = "PT60H50M";
         calendarInput.useHolidays = true;
         calendarInput.holidaysCountries = List.of("US","FR");
+        calendarInput.holidayCalendarPolicy = CalendarAdvanceInput.HOLIDAY_CALENDAR_POLICY_V_ONEOF;
         calendarInput.businessCalendar = null;
         CalendarAdvanceFunction calendarFunction = new CalendarAdvanceFunction();
         try {

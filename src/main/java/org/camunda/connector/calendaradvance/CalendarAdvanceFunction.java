@@ -27,11 +27,10 @@ import java.util.stream.Collectors;
         CalendarAdvanceInput.BUSINESS_TIMEZONE,
         CalendarAdvanceInput.USE_HOLIDAYS,
         CalendarAdvanceInput.HOLIDAYS_COUNTRIES,
+        CalendarAdvanceInput.HOLIDAY_CALENDAR_POLICY,
         CalendarAdvanceInput.DAY_PROGRESSION,
         CalendarAdvanceInput.TARGET_PROGRESSION,
-        CalendarAdvanceInput.ERROR_WHEN_NO_DATE_FOUND,
-        CalendarAdvanceInput.HOLIDAY_CALENDAR_POLICY
-
+        CalendarAdvanceInput.ERROR_WHEN_NO_DATE_FOUND
 }, type = "c-calendaradvance-function")
 public class CalendarAdvanceFunction implements OutboundConnectorFunction, CherryConnector {
 
