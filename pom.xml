@@ -16,7 +16,8 @@
     <!-- 1.3.3 Change code to org.camunda.connector -->
     <!-- 1.3.4 Fix bug in ListPeriods -->
     <!-- 1.4.0 Input "ErrorWhenNoDateFound" and "HolidayCalendarPolicy" -->
-    <version>1.4.0</version>
+    <!-- 1.4.1 Reduce Jar size to 80 kb, and add preload calendar for test reason -->
+    <version>1.4.1</version>
     <url>https://github.com/camunda-community-hub/camunda-8-connector-calendaradvance</url>
 
     <scm>
@@ -189,7 +190,26 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <executions>
+                    <!-- "with-dependencies": a convenience jar for local use (upload to a Connector Runtime
+                         or Cherry instance by hand). Those hosts already provide Spring Boot + the whole
+                         Camunda connector/client/FEEL stack (and their own transitive libraries below), so
+                         this jar excludes all of that by groupId and bundles nothing but this project's own
+                         classes - this project's dependency:tree (scope=compile) shows no genuine extra
+                         runtime library the host doesn't already supply.
+                         shadedArtifactAttached MUST stay true here: with true, the shaded jar is attached
+                         as a SEPARATE classified artifact and the main jar is left untouched; with false,
+                         Shade instead REPLACES the main artifact's file with the fat jar (verified in sibling
+                         projects: that produced a bogus "original-*.jar" backup and a bloated main jar - the
+                         opposite of what we want). To keep this classified jar out of the Maven Central
+                         release while still producing it on every local build, its execution is disabled
+                         (phase=none) specifically under the "community-action-maven-release" profile further
+                         down in this pom - that's the release-profile deploy.yml activates via
+                         community-action-maven-release's "release-profile" input.
+                         NOTE: a single blanket "*:*" exclude was tried first (see sibling projects) but also
+                         strips out this project's OWN compiled classes - excluding by explicit groupId avoids
+                         that trap entirely. -->
                     <execution>
+                        <id>with-dependencies</id>
                         <phase>package</phase>
                         <goals>
                             <goal>shade</goal>
@@ -207,6 +227,79 @@
                                     </excludes>
                                 </filter>
                             </filters>
+                            <artifactSet>
+                                <excludes>
+                                    <!-- Camunda connector/client/FEEL stack -->
+                                    <exclude>io.camunda.connector:*</exclude>
+                                    <exclude>io.camunda:*</exclude>
+                                    <exclude>org.camunda.feel:*</exclude>
+                                    <exclude>org.camunda.bpm.model:*</exclude>
+                                    <!-- Spring Boot / Spring Framework -->
+                                    <exclude>org.springframework.boot:*</exclude>
+                                    <exclude>org.springframework:*</exclude>
+                                    <exclude>ch.qos.logback:*</exclude>
+                                    <exclude>org.apache.logging.log4j:*</exclude>
+                                    <exclude>org.slf4j:*</exclude>
+                                    <exclude>org.apache.tomcat.embed:*</exclude>
+                                    <exclude>io.micrometer:*</exclude>
+                                    <exclude>org.hdrhistogram:*</exclude>
+                                    <exclude>org.latencyutils:*</exclude>
+                                    <exclude>org.hibernate.validator:*</exclude>
+                                    <exclude>org.jboss.logging:*</exclude>
+                                    <exclude>com.fasterxml:classmate</exclude>
+                                    <exclude>org.yaml:*</exclude>
+                                    <!-- gRPC / Netty (Zeebe gateway transport) -->
+                                    <exclude>io.grpc:*</exclude>
+                                    <exclude>io.netty:*</exclude>
+                                    <exclude>io.opencensus:*</exclude>
+                                    <exclude>io.perfmark:*</exclude>
+                                    <exclude>com.google.protobuf:*</exclude>
+                                    <exclude>com.google.api.grpc:*</exclude>
+                                    <exclude>com.google.android:*</exclude>
+                                    <!-- HTTP clients -->
+                                    <exclude>org.apache.httpcomponents:*</exclude>
+                                    <exclude>org.apache.httpcomponents.client5:*</exclude>
+                                    <exclude>org.apache.httpcomponents.core5:*</exclude>
+                                    <exclude>com.google.http-client:*</exclude>
+                                    <exclude>commons-codec:*</exclude>
+                                    <!-- Jackson -->
+                                    <exclude>com.fasterxml.jackson.core:*</exclude>
+                                    <exclude>com.fasterxml.jackson.dataformat:*</exclude>
+                                    <exclude>com.fasterxml.jackson.datatype:*</exclude>
+                                    <exclude>com.fasterxml.jackson.module:*</exclude>
+                                    <exclude>com.fasterxml.uuid:*</exclude>
+                                    <exclude>tools.jackson.core:*</exclude>
+                                    <!-- Scala (FEEL engine) -->
+                                    <exclude>org.scala-lang:*</exclude>
+                                    <exclude>com.lihaoyi:*</exclude>
+                                    <!-- Misc transitive libraries -->
+                                    <exclude>com.auth0:*</exclude>
+                                    <exclude>com.github.ben-manes.caffeine:*</exclude>
+                                    <exclude>com.google.code.findbugs:*</exclude>
+                                    <exclude>com.google.code.gson:*</exclude>
+                                    <exclude>com.google.errorprone:*</exclude>
+                                    <exclude>com.google.guava:*</exclude>
+                                    <exclude>com.google.j2objc:*</exclude>
+                                    <exclude>com.google.auth:*</exclude>
+                                    <exclude>com.google.auto.value:*</exclude>
+                                    <exclude>com.google.api:api-common</exclude>
+                                    <exclude>javax.annotation:javax.annotation-api</exclude>
+                                    <exclude>org.jetbrains:annotations</exclude>
+                                    <exclude>com.thoughtworks.paranamer:*</exclude>
+                                    <exclude>dev.failsafe:*</exclude>
+                                    <exclude>jakarta.annotation:*</exclude>
+                                    <exclude>jakarta.validation:*</exclude>
+                                    <exclude>io.pebbletemplates:*</exclude>
+                                    <exclude>net.steppschuh.markdowngenerator:*</exclude>
+                                    <exclude>org.apache.commons:*</exclude>
+                                    <exclude>org.bouncycastle:*</exclude>
+                                    <exclude>org.checkerframework:*</exclude>
+                                    <exclude>org.codehaus.mojo:animal-sniffer-annotations</exclude>
+                                    <exclude>org.jspecify:*</exclude>
+                                    <exclude>org.unbescape:*</exclude>
+                                    <exclude>uk.co.jemos.podam:*</exclude>
+                                </excludes>
+                            </artifactSet>
                         </configuration>
                     </execution>
                 </executions>
@@ -220,12 +313,17 @@
     </build>
 
     <profiles>
-        <!-- Personal/manual deploy path to Camunda's camunda-consulting Artifactory repo,
-             using the current user's own personal Artifactory token instead of the
-             community-hub's shared release credentials. Activate explicitly with
-             -P camunda-consulting; without it, distributionManagement and the
-             maven-deploy-plugin skip both fall back to community-hub-release-parent's
-             defaults (used by the Maven Central / camunda-bpm-community-extensions path). -->
+        <!-- Activated explicitly via "mvn -P camunda-consulting deploy" (see
+             deploy-artifactory-camunda.yml). Personal/manual deploy path to Camunda's
+             camunda-consulting Artifactory repo, using the current user's own personal Artifactory
+             token instead of the community-hub's shared release credentials. Without it,
+             distributionManagement and the maven-deploy-plugin skip both fall back to
+             community-hub-release-parent's defaults (used by deploy.yml's Maven Central path). Kept
+             profile-scoped, rather than unconditional, so that deploy.yml's own
+             community-action-maven-release (Sonatype/Nexus release) - which runs a plain "mvn
+             deploy" with no "-P camunda-consulting" - keeps using the parent's real Sonatype
+             distributionManagement instead of being hijacked into deploying (and failing with 401,
+             since that job has no Artifactory credentials) to camunda-consulting. -->
         <profile>
             <id>camunda-consulting</id>
             <distributionManagement>
@@ -248,6 +346,51 @@
                         <configuration>
                             <skip>false</skip>
                         </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Same profile id as the one community-hub-release-parent defines and that deploy.yml
+             activates via community-action-maven-release's "release-profile" input. Maven activates
+             both the parent's and this child's profile together when that id is requested, so this
+             just adds to the parent's release behavior: it disables the "with-dependencies" shade
+             execution above for that build only, so the classified jar is never attached and never
+             deployed to Maven Central - it stays a local-only convenience artifact produced by plain
+             "mvn package"/"mvn install" runs. -->
+        <profile>
+            <id>community-action-maven-release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-shade-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>with-dependencies</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>

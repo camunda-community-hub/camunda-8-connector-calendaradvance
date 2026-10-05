@@ -7,6 +7,7 @@ import org.camunda.connector.calendaradvance.CalendarAdvanceInput;
 import org.camunda.connector.calendaradvance.CalendarAdvanceOutput;
 import org.camunda.connector.calendaradvance.advancehour.HourFunction;
 import org.camunda.connector.calendaradvance.timemachine.SlotContainer;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,12 @@ import static org.mockito.Mockito.when;
 
 public class TestLocalTimeCalendar {
     private final Logger logger = LoggerFactory.getLogger(TestLocalTimeCalendar.class.getName());
+
+    @BeforeAll
+    public static void setUp() {
+        // preload real holiday data so these tests don't depend on a live HTTP call
+        TestHolidayData.preload();
+    }
 
     @Test
     public void testHourForwardHoliday() {

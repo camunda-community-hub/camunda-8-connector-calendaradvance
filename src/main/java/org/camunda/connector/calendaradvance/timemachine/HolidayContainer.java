@@ -41,6 +41,24 @@ public class HolidayContainer {
     }
 
     /**
+     * Register a calendar directly, bypassing the live HTTP call to date.nager.at.
+     * Intended for tests, so holiday-dependent test cases are deterministic and don't depend on
+     * network access - production code is unaffected and keeps calling loadHoliday() normally for
+     * any (year, countryCode) that hasn't been preloaded this way.
+     *
+     * @param year        year this calendar is for
+     * @param countryCode 2-letter country code
+     * @param holidays    list of holiday dates for that year/country
+     */
+    public void preloadCalendar(int year, String countryCode, List<LocalDate> holidays) {
+        CalendarHoliday calendarHoliday = new CalendarHoliday();
+        calendarHoliday.country = countryCode;
+        calendarHoliday.year = year;
+        calendarHoliday.listDays.addAll(holidays);
+        calendars.put(countryCode + "-" + year, calendarHoliday);
+    }
+
+    /**
      * Return true if the date is a holiday, combining the countries code given according to the policy
      *
      * @param date          date to check
