@@ -63,36 +63,23 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-
+        <!-- Supplied by the Connector Runtime that hosts this connector at execution time:
+             compiled against here, but excluded from both the plain jar's own classpath metadata
+             and the -with-dependencies shaded jar (shade only bundles compile/runtime scope). -->
         <dependency>
             <groupId>io.camunda.connector</groupId>
             <artifactId>connector-core</artifactId>
             <version>${version.connector}</version>
-            <!--<scope>provided</scope>  -->
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.camunda.connector</groupId>
             <artifactId>connector-runtime-core</artifactId>
             <version>${version.connector}</version>
+            <scope>provided</scope>
         </dependency>
 
 
-        <dependency>
-            <groupId>io.camunda.connector</groupId>
-            <artifactId>element-template-generator-core</artifactId>
-            <version>${version.connector}</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.module</groupId>
-            <artifactId>jackson-module-scala_2.13</artifactId>
-            <version>2.17.0</version>
-        </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -123,17 +110,29 @@
         </dependency>
 
 
-        <!-- for testing connectors locally in bundle with runtime -->
+        <!-- for testing connectors locally in bundle with runtime (LocalConnectorRuntime, test-only) -->
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>io.camunda.connector</groupId>
             <artifactId>spring-boot-starter-camunda-connectors</artifactId>
             <version>${version.connector}</version>
-            <!--            <scope>test</scope> -->
+            <scope>test</scope>
         </dependency>
 
-        <!-- to generate the element-template -->
+        <!-- to generate the element-template (ElementTemplateGenerator, test-only) -->
+
+        <dependency>
+            <groupId>io.camunda.connector</groupId>
+            <artifactId>element-template-generator-core</artifactId>
+            <version>${version.connector}</version>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>io.camunda.community</groupId>
