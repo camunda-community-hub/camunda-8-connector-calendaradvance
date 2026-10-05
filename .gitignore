@@ -1,0 +1,5 @@
+# Contains a real Camunda SaaS client-id/client-secret for local dev - never commit this
+src/test/resources/application-py.yaml
+
+# Maven build output
+target/
